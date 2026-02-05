@@ -156,6 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 currentSongTitle.style.animation=`scroll ${duration}s linear infinite`;
             } else { currentSongTitle.style.animation="none"; }
         },500);
+        initAudioContext();
+
     }
 
     function playPause(){
@@ -197,12 +199,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // -------- Logo pulse/glow --------
     const logo = document.getElementById("soundio-logo");
-    const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    //const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
     const source = audioCtx.createMediaElementSource(player);
     const analyser = audioCtx.createAnalyser();
     source.connect(analyser); analyser.connect(audioCtx.destination);
     analyser.fftSize=256;
     const dataArray=new Uint8Array(analyser.frequencyBinCount);
+
+    let audioCtx, analyser, source;
+
+function initAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(player);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+    }
+}
+
     function animateLogo(){
         requestAnimationFrame(animateLogo);
         analyser.getByteFrequencyData(dataArray);
