@@ -93,7 +93,7 @@ button:hover { background-color:#8c9352; }
 
 <ul id="playlist">
     {% for song in playlist %}
-        <li data-src="/static/music/{{ song }}">{{ song }}</li>
+        <li data-src="{{ url_for('music', filename=song) }}">{{ song }}</li>
     {% endfor %}
 </ul>
 
