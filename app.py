@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory,url_for, request, jsonify
+from flask import Flask, render_template, send_from_directory, url_for, request, jsonify
 import os
 import random
 
@@ -9,7 +9,6 @@ builder = "NIXPACKS"
 
 #[deploy]#
 startCommand = "gunicorn app:app"
-
 
 # Path to the music folder
 MUSIC_DIR = os.path.join(app.static_folder, "music")
