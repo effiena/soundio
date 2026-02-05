@@ -192,7 +192,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("shuffle-btn").addEventListener("click",shufflePlaylist);
     document.getElementById("repeat-btn").addEventListener("click",toggleRepeat);
 
-    if(playlist.length>0) loadSong(currentIndex);
+       // -------- autoplay --------
+    //if(playlist.length>0) loadSong(currentIndex);
 
     // -------- Logo pulse/glow --------
     const logo = document.getElementById("soundio-logo");
