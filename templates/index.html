@@ -92,10 +92,11 @@ button:hover { background-color:#8c9352; }
 </div>
 
 <ul id="playlist">
-    {% for song, encoded in zip(playlist, encoded_playlist) %}
-        <li data-src="{{ url_for('music', filename=encoded) }}">{{ song }}</li>
+    {% for song in playlist %}
+        <li data-src="{{ url_for('music', filename=song) }}">{{ song }}</li>
     {% endfor %}
 </ul>
+
 
 <div class="player-container">
     <audio id="player" playsinline></audio>
