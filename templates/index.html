@@ -143,6 +143,21 @@ function loadSong(index){
     updateCurrentSongTitle();
 }
 
+    function updateCurrentSongTitle() {
+    const currentSongTitle = document.getElementById("current-song");
+    const songName = playlistItems[currentIndex].textContent;
+    currentSongTitle.style.animation = "none";
+    currentSongTitle.textContent = `🎶 Now Playing: ${songName}`;
+
+    const containerWidth = document.getElementById("current-song-container").offsetWidth;
+    const textWidth = currentSongTitle.scrollWidth;
+
+    if(textWidth > containerWidth) {
+        const duration = textWidth / 50; // adjust scroll speed
+        currentSongTitle.style.animation = `scroll ${duration}s linear infinite`;
+    }
+}
+
 
     function playPause() {
         if (!player.src && playlist.length > 0) { 
