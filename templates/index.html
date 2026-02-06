@@ -40,22 +40,15 @@ button:hover { background:#8c9352; }
  100%{transform:translateX(-100%);}
 }
 
-#logo-container { 
-  position: relative; 
-  height:150px; /* space for side-to-side motion */
-}
+#logo-container { text-align:center; margin-top:15px; }
 
 #soundio-logo {
-  position: absolute;
-  width:110px;
-  aspect-ratio:1/1;
-  border-radius:50%;
-  object-fit:cover;
-  top:50px; /* vertical center in container */
-  left:50%;
-  transform: translateX(-50%);
-  box-shadow:0 0 10px rgba(230,194,41,0.5);
-  transition: box-shadow 0.05s linear;
+ width:110px;
+ aspect-ratio:1/1;
+ border-radius:50%;
+ object-fit:cover;
+ box-shadow:0 0 10px rgba(230,194,41,0.5);
+ transition: transform 0.05s linear, box-shadow 0.05s linear;
 }
 </style>
 </head>
@@ -63,27 +56,13 @@ button:hover { background:#8c9352; }
 <body>
 
 <div id="logo-container">
-  <img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo">
+<img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo">
 </div>
 
-<h1>
-<svg width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-right:6px;">
-  <path fill="#E6C229" d="M9 17V5l12-2v12"/>
-  <circle fill="#E6C229" cx="6" cy="18" r="3"/>
-  <circle fill="#E6C229" cx="18" cy="16" r="3"/>
-</svg>
-
-SOUNDIO
-
-<svg width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-left:6px;">
-  <path fill="#E6C229" d="M9 17V5l12-2v12"/>
-  <circle fill="#E6C229" cx="6" cy="18" r="3"/>
-  <circle fill="#E6C229" cx="18" cy="16" r="3"/>
-</svg>
-</h1>
+<h1>🎶 SOUNDIO 🎶</h1>
 
 <div id="current-song-container">
-  <span id="current-song">🎵 Select a song to play 🎵</span>
+<span id="current-song">🎵 Select a song to play 🎵</span>
 </div>
 
 <ul id="playlist">
@@ -93,20 +72,21 @@ SOUNDIO
 </ul>
 
 <div class="player-container">
-  <audio id="player" playsinline controls></audio>
+<audio id="player" playsinline controls></audio>
 
-  <div>
-    <button id="prev-btn">⏮ Prev</button>
-    <button id="play-pause-btn">▶️ Play / ⏸ Pause</button>
-    <button id="stop-btn">⏹ Stop</button>
-    <button id="next-btn">⏭ Next</button>
-    <button id="shuffle-btn">🔀 Shuffle</button>
-    <button id="repeat-btn">🔁 Repeat</button>
-  </div>
+<div>
+<button id="prev-btn">⏮ Prev</button>
+<button id="play-pause-btn">▶️ Play / ⏸ Pause</button>
+<button id="stop-btn">⏹ Stop</button>
+<button id="next-btn">⏭ Next</button>
+<button id="shuffle-btn">🔀 Shuffle</button>
+<button id="repeat-btn">🔁 Repeat</button>
+</div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
 const player = document.getElementById("player");
 const items = Array.from(document.querySelectorAll("#playlist li"));
 const playBtn = document.getElementById("play-pause-btn");
@@ -134,24 +114,6 @@ function initAudio(){
  analyser.connect(audioCtx.destination);
  analyser.fftSize = 256;
  dataArray = new Uint8Array(analyser.frequencyBinCount);
- animateLogo();
-}
-
-// Pulsing + 3→9 o'clock half-circle motion
-function animateLogo(){
-  if(!analyser) return;
-  requestAnimationFrame(animateLogo);
-  analyser.getByteFrequencyData(dataArray);
-  let avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-
-  let scale = 0.9 + (avg/255)*0.3;
-
-  const radius = 60; // half-circle radius
-  const angle = Math.PI * (0.5 + 0.5 * Math.sin(Date.now()/1500)); // side-to-side
-  const x = radius * Math.cos(angle);
-
-  logo.style.transform = `translateX(${x}px) scale(${scale})`;
-  logo.style.boxShadow = `0 0 ${avg/255*20}px rgba(230,194,41,0.8)`;
 }
 
 function updateTitle(){
@@ -179,8 +141,13 @@ function loadSong(i){
 
 function playPause(){
  if(!player.src){ loadSong(index); return; }
- if(isPlaying){ player.pause(); playBtn.textContent="▶️"; } 
- else{ player.play(); playBtn.textContent="⏸"; }
+ if(isPlaying){
+  player.pause();
+  playBtn.textContent="▶️";
+ } else {
+  player.play();
+  playBtn.textContent="⏸";
+ }
  isPlaying=!isPlaying;
 }
 
@@ -213,6 +180,7 @@ nextBtn.onclick=next;
 prevBtn.onclick=prev;
 shuffleBtn.onclick=shuffle;
 repeatBtn.onclick=()=>{repeat=!repeat; alert("Repeat "+(repeat?"ON":"OFF"));};
+
 player.addEventListener("ended", next);
 
 });
