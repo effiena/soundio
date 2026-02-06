@@ -40,7 +40,7 @@ button:hover { background:#8c9352; }
 
 <ul id="playlist">
     {% for song in playlist %}
-        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">{{ song }}</li>
+        <li data-src="{{ url_for('music', filename=song) }}">{{ song }}</li>
     {% endfor %}
 </ul>
 
@@ -201,3 +201,4 @@ document.addEventListener("DOMContentLoaded", () => {
     </script>
     </body>
 </html>
+
