@@ -180,14 +180,8 @@ function loadSong(index){
     repeatBtn.addEventListener("click", toggleRepeat);
   
     player.addEventListener("ended", nextSong);
-    player.addEventListener("timeupdate",()=>{
-        if(player.duration){
-            currentTimeEl.textContent = formatTime(player.currentTime);
-            durationEl.textContent = formatTime(player.duration);
+ 
 }
-player.addEventListener("ended", nextSong);
-
-
-    </script>
+       </script>
     </body>
 </html>
