@@ -67,7 +67,9 @@ button:hover { background:#8c9352; }
 
 
 <div class="player-container">
-    <audio id="player" playsinline controls></audio>
+    <audio id="player" playsinline controls>
+            <source src="{{ url_for('static', filename='music/yourfile.mp3') }}" type="audio/mpeg">
+    </audio>
 
 
     <div>
