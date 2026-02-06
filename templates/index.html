@@ -62,7 +62,8 @@ button:hover { background:#8c9352; }
 <ul id="playlist">
     {% for song in playlist %}
         <!-- Use url_for to generate a proper static URL -->
-        <li data-src="{{ url_for('static', filename='music/' ~ song) | safe }}">{{ song }}</li>
+        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">{{ song }}</li>
+
     {% endfor %}
 </ul>
 
