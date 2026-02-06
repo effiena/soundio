@@ -63,7 +63,6 @@ button:hover { background:#8c9352; }
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
     const playlistItems = Array.from(document.querySelectorAll("#playlist li"));
-    const progressBar = document.getElementById("progress-bar");
     const currentTimeEl = document.getElementById("current");
     const durationEl = document.getElementById("duration");
     const currentSongTitle = document.getElementById("current-song");
@@ -183,8 +182,6 @@ function loadSong(index){
     player.addEventListener("ended", nextSong);
     player.addEventListener("timeupdate",()=>{
         if(player.duration){
-            progressBar.max = player.duration;
-            progressBar.value = player.currentTime;
             currentTimeEl.textContent = formatTime(player.currentTime);
             durationEl.textContent = formatTime(player.duration);
 }
