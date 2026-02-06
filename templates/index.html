@@ -63,8 +63,6 @@ button:hover { background:#8c9352; }
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
     const playlistItems = Array.from(document.querySelectorAll("#playlist li"));
-    const currentTimeEl = document.getElementById("current");
-    const durationEl = document.getElementById("duration");
     const currentSongTitle = document.getElementById("current-song");
 
     const playPauseBtn = document.getElementById("play-pause-btn");
@@ -79,109 +77,94 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPlaying = false;
     let isRepeat = false;
 
-    let audioCtx=null, analyser=null, source=null, dataArray=null, animationStarted=false;
-
-    function initAudioContext(){
-        if(!audioCtx){
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            source = audioCtx.createMediaElementSource(player);
-            analyser = audioCtx.createAnalyser();
-            source.connect(analyser);
-            analyser.connect(audioCtx.destination);
-            analyser.fftSize = 256;
-            dataArray = new Uint8Array(analyser.frequencyBinCount);
-            if(!animationStarted){ animationStarted=true; animateLogo(); }
-        }
-    }
-
-    function unlockAudio(){
-        if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
-    }
-
-    document.body.addEventListener("click", unlockAudio, {once:true});
-    document.body.addEventListener("touchstart", unlockAudio, {once:true});
-
-    const logo = document.getElementById("soundio-logo");
-    function animateLogo(){
-        if(!analyser) return;
-        requestAnimationFrame(animateLogo);
-        analyser.getByteFrequencyData(dataArray);
-        let sum=0;
-        dataArray.forEach(v=>sum+=v);
-        let avg=sum/dataArray.length;
-        if(logo){
-            const scale=0.9+(avg/255)*0.3;
-            const glow=(avg/255)*20;
-            logo.style.transform=`scale(${scale})`;
-            logo.style.boxShadow=`0 0 ${glow}px rgba(230,194,41,0.8)`;
-        }
-    }
-
-    function formatTime(sec){ 
-        if(isNaN(sec)) return "00:00"; 
-        const m=Math.floor(sec/60), s=Math.floor(sec%60); 
-        return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }
-
-    function updateCurrentSongTitle(){
+    function updateCurrentSongTitle() {
         const songName = playlistItems[currentIndex].textContent;
-        currentSongTitle.style.animation = "none";
         currentSongTitle.textContent = `🎶 Now Playing: ${songName}`;
-        const containerWidth=document.getElementById("current-song-container").offsetWidth;
-        const textWidth=currentSongTitle.scrollWidth;
-        if(textWidth>containerWidth){
-            const duration=textWidth/50;
-            currentSongTitle.style.animation = `scroll ${duration}s linear infinite`;
+    }
+
+    function loadSong(index) {
+        playlistItems.forEach(li => li.classList.remove("active"));
+        playlistItems[index].classList.add("active");
+
+        player.src = playlist[index];
+        console.log("Audio src set to:", player.src);
+
+        player.play().catch(err => console.log("Playback failed:", err));
+        isPlaying = true;
+        playPauseBtn.textContent = "⏸";
+
+        updateCurrentSongTitle();
+    }
+
+    function playPause() {
+        if (!player.src && playlist.length > 0) {
+            loadSong(currentIndex);
+            return;
+        }
+
+        if (isPlaying) {
+            player.pause();
+            isPlaying = false;
+            playPauseBtn.textContent = "▶️";
+        } else {
+            player.play();
+            isPlaying = true;
+            playPauseBtn.textContent = "⏸";
         }
     }
 
-function loadSong(index){
-    initAudioContext();
-    unlockAudio();
-
-    playlistItems.forEach(li => li.classList.remove("active"));
-    playlistItems[index].classList.add("active");
-
-    player.src = playlist[index];
-    console.log("Audio src set to:", player.src);
-
-    player.play().catch(err => console.log("Playback failed:", err));
-    isPlaying = true;
-    playPauseBtn.textContent = "⏸";
-
-    updateCurrentSongTitle();
-}
-
-    function playPause(){ 
-        if(!player.src && playlist.length>0){ loadSong(currentIndex); return; }
-        if(isPlaying){ player.pause(); isPlaying=false; playPauseBtn.textContent="▶️"; }
-        else{ player.play(); isPlaying=true; playPauseBtn.textContent="⏸"; }
+    function stopSong() {
+        player.pause();
+        player.currentTime = 0;
+        isPlaying = false;
+        playPauseBtn.textContent = "▶️";
     }
-    function stopSong(){ player.pause(); player.currentTime=0; isPlaying=false; playPauseBtn.textContent="▶️"; }
-    function nextSong(){ currentIndex=isRepeat?currentIndex:(currentIndex+1)%playlist.length; loadSong(currentIndex); }
-    function prevSong(){ currentIndex=(currentIndex-1+playlist.length)%playlist.length; loadSong(currentIndex); }
-    function shufflePlaylist(){ 
-        for(let i=playlist.length-1;i>0;i--){ 
-            const j=Math.floor(Math.random()*(i+1));
-            [playlist[i],playlist[j]]=[playlist[j],playlist[i]];
-            [playlistItems[i].textContent,playlistItems[j].textContent]=[playlistItems[j].textContent,playlistItems[i].textContent];
-            [playlistItems[i].dataset.src,playlistItems[j].dataset.src]=[playlistItems[j].dataset.src,playlistItems[i].dataset.src];
+
+    function nextSong() {
+        currentIndex = isRepeat ? currentIndex : (currentIndex + 1) % playlist.length;
+        loadSong(currentIndex);
+    }
+
+    function prevSong() {
+        currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+        loadSong(currentIndex);
+    }
+
+    function shufflePlaylist() {
+        for (let i = playlist.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
+            [playlistItems[i].textContent, playlistItems[j].textContent] =
+                [playlistItems[j].textContent, playlistItems[i].textContent];
+            [playlistItems[i].dataset.src, playlistItems[j].dataset.src] =
+                [playlistItems[j].dataset.src, playlistItems[i].dataset.src];
         }
-        currentIndex=0; loadSong(currentIndex);
+        currentIndex = 0;
+        loadSong(currentIndex);
     }
-    function toggleRepeat(){ isRepeat=!isRepeat; alert("Repeat "+(isRepeat?"ON":"OFF")); }
 
-    playlistItems.forEach((li,idx)=>li.addEventListener("click",()=>{currentIndex=idx; loadSong(currentIndex);}));
+    function toggleRepeat() {
+        isRepeat = !isRepeat;
+        alert("Repeat " + (isRepeat ? "ON" : "OFF"));
+    }
+
+    playlistItems.forEach((li, idx) =>
+        li.addEventListener("click", () => {
+            currentIndex = idx;
+            loadSong(currentIndex);
+        })
+    );
+
     playPauseBtn.addEventListener("click", playPause);
     stopBtn.addEventListener("click", stopSong);
     nextBtn.addEventListener("click", nextSong);
     prevBtn.addEventListener("click", prevSong);
     shuffleBtn.addEventListener("click", shufflePlaylist);
     repeatBtn.addEventListener("click", toggleRepeat);
-  
+
     player.addEventListener("ended", nextSong);
- 
-}
-       </script>
+});
+</script>
+
     </body>
 </html>
