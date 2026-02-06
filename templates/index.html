@@ -84,8 +84,6 @@ button:hover { background:#8c9352; }
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
     const playlistItems = Array.from(document.querySelectorAll("#playlist li"));
-    const currentSongTitle = document.getElementById("current-song");
-
     const playPauseBtn = document.getElementById("play-pause-btn");
     const stopBtn = document.getElementById("stop-btn");
     const nextBtn = document.getElementById("next-btn");
@@ -98,78 +96,30 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPlaying = false;
     let isRepeat = false;
 
-    let startTime = performance.now();
-
-function animateLogo() {
-    requestAnimationFrame(animateLogo);
-
-    if (!logo) return;
-
-    const t = (performance.now() - startTime) / 1000;
-
-    // ---------- BASE IDLE PULSE ----------
-    const idlePulse = 0.04 * Math.sin(t * 2.2); // smooth breathing
-    let scale = 1 + idlePulse;
-    let glow = 10 + Math.abs(idlePulse) * 80;
-
-    // ---------- AUDIO REACTIVE BOOST ----------
-    if (analyser && dataArray) {
-        analyser.getByteFrequencyData(dataArray);
-
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        const avg = sum / dataArray.length / 255;
-
-        scale += avg * 0.25;
-        glow += avg * 35;
-    }
-
-    logo.style.transform = `scale(${scale})`;
-    logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.85)`;
-}
-
-
-    function updateCurrentSongTitle() {
-        const songName = playlistItems[currentIndex].textContent;
-        currentSongTitle.textContent = `🎶 Now Playing: ${songName}`;
-    }
-
     function loadSong(index) {
+        player.src = playlist[index];  // set the source dynamically
         playlistItems.forEach(li => li.classList.remove("active"));
         playlistItems[index].classList.add("active");
-
-        player.src = playlist[index];
-        console.log("Audio src set to:", player.src);
 
         player.play().catch(err => console.log("Playback failed:", err));
         isPlaying = true;
         playPauseBtn.textContent = "⏸";
-
-        updateCurrentSongTitle();
     }
 
     function playPause() {
-        if (!player.src && playlist.length > 0) {
-            loadSong(currentIndex);
-            return;
+        if (!player.src && playlist.length > 0) { 
+            loadSong(currentIndex); 
+            return; 
         }
-
-        if (isPlaying) {
-            player.pause();
-            isPlaying = false;
-            playPauseBtn.textContent = "▶️";
-        } else {
-            player.play();
-            isPlaying = true;
-            playPauseBtn.textContent = "⏸";
+        if (isPlaying) { 
+            player.pause(); 
+            isPlaying = false; 
+            playPauseBtn.textContent = "▶️"; 
+        } else { 
+            player.play(); 
+            isPlaying = true; 
+            playPauseBtn.textContent = "⏸"; 
         }
-    }
-
-    function stopSong() {
-        player.pause();
-        player.currentTime = 0;
-        isPlaying = false;
-        playPauseBtn.textContent = "▶️";
     }
 
     function nextSong() {
@@ -200,22 +150,29 @@ function animateLogo() {
         alert("Repeat " + (isRepeat ? "ON" : "OFF"));
     }
 
-    playlistItems.forEach((li, idx) =>
-        li.addEventListener("click", () => {
-            currentIndex = idx;
-            loadSong(currentIndex);
-        })
-    );
+    // Playlist click
+    playlistItems.forEach((li, idx) => li.addEventListener("click", () => {
+        currentIndex = idx;
+        loadSong(currentIndex);
+    }));
 
+    // Buttons
     playPauseBtn.addEventListener("click", playPause);
-    stopBtn.addEventListener("click", stopSong);
+    stopBtn.addEventListener("click", () => {
+        player.pause();
+        player.currentTime = 0;
+        isPlaying = false;
+        playPauseBtn.textContent = "▶️";
+    });
     nextBtn.addEventListener("click", nextSong);
     prevBtn.addEventListener("click", prevSong);
     shuffleBtn.addEventListener("click", shufflePlaylist);
     repeatBtn.addEventListener("click", toggleRepeat);
 
+    // Auto next
     player.addEventListener("ended", nextSong);
 });
+
 </script>
 
     </body>
