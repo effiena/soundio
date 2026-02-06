@@ -17,12 +17,15 @@
 <style>
 body { background:#f5e895; font-family:Montserrat,sans-serif; margin:0; text-align:center; }
 h1 { background:#000; color:#E6C229; margin:0; padding:15px; }
+
 #playlist { list-style:none; padding:0; margin:10px; max-height:220px; overflow-y:auto; }
 #playlist li { padding:10px; cursor:pointer; border-bottom:1px solid #777853; }
 #playlist li:hover { background:#EBD671; }
 #playlist li.active { background:#000; color:#E6C229; font-weight:bold; }
+
 .player-container { margin-top:15px; }
 audio { display:block; width:90%; margin:10px auto; }
+
 button { background:#656648; color:#F4F1DE; border:none; padding:10px 16px; margin:5px; border-radius:6px; cursor:pointer; }
 button:hover { background:#8c9352; }
 
@@ -44,17 +47,19 @@ button:hover { background:#8c9352; }
 #logo-container { text-align:center; margin-top:15px; }
 
 #soundio-logo {
- width:110px;
+ width:140px;
  aspect-ratio:1/1;
  border-radius:50%;
  object-fit:cover;
  box-shadow:0 0 10px rgba(230,194,41,0.5);
  transition: transform 0.05s linear, box-shadow 0.05s linear;
 }
- #music-icon {
+
+#music-icon {
  filter: drop-shadow(0 0 6px #E6C229);
  animation: pulse 1.2s infinite alternate;
 }
+
 @keyframes pulse {
  from { transform: scale(1); }
  to { transform: scale(1.15); }
@@ -67,8 +72,9 @@ button:hover { background:#8c9352; }
 <div id="logo-container">
 <img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo">
 </div>
+
 <h1>
-<svg width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-right:6px;">
+<svg id="music-icon" width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-right:6px;">
   <path fill="#E6C229" d="M9 17V5l12-2v12"/>
   <circle fill="#E6C229" cx="6" cy="18" r="3"/>
   <circle fill="#E6C229" cx="18" cy="16" r="3"/>
@@ -76,12 +82,13 @@ button:hover { background:#8c9352; }
 
 SOUNDIO
 
-<svg width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-left:6px;">
+<svg id="music-icon" width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-left:6px;">
   <path fill="#E6C229" d="M9 17V5l12-2v12"/>
   <circle fill="#E6C229" cx="6" cy="18" r="3"/>
   <circle fill="#E6C229" cx="18" cy="16" r="3"/>
 </svg>
 </h1>
+
 <div id="current-song-container">
 <span id="current-song">🎵 Select a song to play 🎵</span>
 </div>
@@ -143,10 +150,16 @@ function animateLogo(){
  requestAnimationFrame(animateLogo);
  analyser.getByteFrequencyData(dataArray);
  let avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+
  let scale = 0.9 + (avg/255)*0.3;
  let glow = (avg/255)*20;
+
  logo.style.transform = `scale(${scale})`;
  logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+
+ document.querySelectorAll("#music-icon").forEach(icon=>{
+   icon.style.transform = `scale(${1 + (avg/255)*0.25})`;
+ });
 }
 
 function updateTitle(){
@@ -176,25 +189,13 @@ function loadSong(i){
 
 function playPause(){
  if(!player.src){ loadSong(index); return; }
- if(isPlaying){
-  player.pause();
-  playBtn.textContent="▶️";
- } else {
-  player.play();
-  playBtn.textContent="⏸";
- }
+ if(isPlaying){ player.pause(); playBtn.textContent="▶️"; }
+ else { player.play(); playBtn.textContent="⏸"; }
  isPlaying=!isPlaying;
 }
 
-function next(){
- index = repeat ? index : (index+1)%playlist.length;
- loadSong(index);
-}
-
-function prev(){
- index = (index-1+playlist.length)%playlist.length;
- loadSong(index);
-}
+function next(){ index = repeat ? index : (index+1)%playlist.length; loadSong(index); }
+function prev(){ index = (index-1+playlist.length)%playlist.length; loadSong(index); }
 
 function shuffle(){
  for(let i=playlist.length-1;i>0;i--){
@@ -207,12 +208,7 @@ function shuffle(){
  loadSong(index);
 }
 
-items.forEach((li,i)=>{
- li.addEventListener("click",()=>{
-  index=i;
-  loadSong(index);
- });
-});
+items.forEach((li,i)=> li.addEventListener("click",()=>{ index=i; loadSong(index); }));
 
 playBtn.onclick=playPause;
 stopBtn.onclick=()=>{player.pause();player.currentTime=0;isPlaying=false;playBtn.textContent="▶️";};
