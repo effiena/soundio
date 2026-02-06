@@ -15,19 +15,11 @@ MUSIC_DIR = os.path.join(app.static_folder, "music")
 
 # ------------------ Flask Routes ------------------
 
-#@app.route("/")
-#def index():
-    # get all mp3 files
-    #playlist = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
-    #return render_template("index.html", playlist=playlist)
-
 @app.route("/")
 def index():
-    print("MUSIC_DIR =", MUSIC_DIR)
-    print("FILES =", os.listdir(MUSIC_DIR))
-
+    get all mp3 files
     playlist = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
-    return render_template("index.html", playlist=playlist)#
+    return render_template("index.html", playlist=playlist)
 
 
 @app.route("/music/<path:filename>")
