@@ -118,103 +118,187 @@ button:hover { background-color:#8c9352; }
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    // -------------------- ELEMENTS --------------------
     const player = document.getElementById("player");
     const playlistItems = Array.from(document.querySelectorAll("#playlist li"));
     const currentSongTitle = document.getElementById("current-song");
     const progressBar = document.getElementById("progress-bar");
     const currentTimeEl = document.getElementById("current");
     const durationEl = document.getElementById("duration");
+    const logo = document.getElementById("soundio-logo");
 
+    const playPauseBtn = document.getElementById("play-pause-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const shuffleBtn = document.getElementById("shuffle-btn");
+    const repeatBtn = document.getElementById("repeat-btn");
+
+    // -------------------- STATE --------------------
     let playlist = playlistItems.map(li => li.dataset.src);
     let currentIndex = 0;
     let isPlaying = false;
     let isRepeat = false;
 
-    function formatTime(sec){
-        if(isNaN(sec)) return "00:00";
-        const m=Math.floor(sec/60);
-        const s=Math.floor(sec%60);
+    // -------------------- AUDIO CONTEXT --------------------
+    let audioCtx = null;
+    let analyser = null;
+    let source = null;
+    let dataArray = null;
+    let animationStarted = false;
+
+    function initAudioContext() {
+        if (audioCtx) return;
+
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(player);
+        analyser = audioCtx.createAnalyser();
+
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        if (!animationStarted) {
+            animationStarted = true;
+            animateLogo();
+        }
+    }
+
+    function animateLogo() {
+        if (!analyser) return;
+        requestAnimationFrame(animateLogo);
+
+        analyser.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+
+        const avg = sum / dataArray.length;
+        const scale = 0.9 + (avg / 255) * 0.3;
+        const glow = (avg / 255) * 20;
+
+        logo.style.transform = `scale(${scale})`;
+        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+    }
+
+    // -------------------- UTILS --------------------
+    function formatTime(sec) {
+        if (isNaN(sec)) return "00:00";
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
         return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
 
-    function loadSong(index){
-        playlistItems.forEach(li=>li.classList.remove("active"));
-        playlistItems[index].classList.add("active");
-        player.src = playlist[index];
-        player.play();
-        isPlaying=true;
-
+    function updateCurrentSongTitle() {
         currentSongTitle.classList.add("fade-out");
-        setTimeout(()=>{
-            currentSongTitle.textContent=`🎶 Now Playing: ${playlistItems[index].textContent}`;
+        setTimeout(() => {
+            currentSongTitle.textContent = `🎶 Now Playing: ${playlistItems[currentIndex].textContent}`;
             currentSongTitle.classList.remove("fade-out");
 
             const containerWidth = document.getElementById("current-song-container").offsetWidth;
             const textWidth = currentSongTitle.scrollWidth;
-            if(textWidth>containerWidth){
-                const duration = textWidth/50;
-                currentSongTitle.style.animation=`scroll ${duration}s linear infinite`;
-            } else { currentSongTitle.style.animation="none"; }
-        },500);
+            if (textWidth > containerWidth) {
+                const duration = textWidth / 50;
+                currentSongTitle.style.animation = `scroll ${duration}s linear infinite`;
+            } else {
+                currentSongTitle.style.animation = "none";
+            }
+        }, 500);
     }
 
-    function playPause(){
-        if(!player.src && playlist.length>0){ loadSong(currentIndex); return; }
-        if(isPlaying){ player.pause(); isPlaying=false; playPauseBtn.textContent="▶️"; }
+    // -------------------- SONG CONTROL --------------------
+    function loadSong(index) {
+        initAudioContext();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+
+        playlistItems.forEach(li => li.classList.remove("active"));
+        playlistItems[index].classList.add("active");
+
+        player.src = playlist[index];
+        player.play();
+        isPlaying = true;
+        playPauseBtn.textContent = "⏸";
+
+        updateCurrentSongTitle();
+    }
+
+    function playPause() {
+        if (!player.src && playlist.length > 0) { loadSong(currentIndex); return; }
+        if (isPlaying) { player.pause(); isPlaying=false; playPauseBtn.textContent="▶️"; }
         else { player.play(); isPlaying=true; playPauseBtn.textContent="⏸"; }
     }
 
-    function stopSong(){ player.pause(); player.currentTime=0; isPlaying=false; playPauseBtn.textContent="▶️"; }
-    function nextSong(){ if(isRepeat) loadSong(currentIndex); else { currentIndex=(currentIndex+1)%playlist.length; loadSong(currentIndex); } }
-    function prevSong(){ currentIndex=(currentIndex-1+playlist.length)%playlist.length; loadSong(currentIndex); }
-    function shufflePlaylist(){ 
-        for(let i=playlist.length-1;i>0;i--){ 
-            const j=Math.floor(Math.random()*(i+1));
-            [playlist[i],playlist[j]]=[playlist[j],playlist[i]];
-            [playlistItems[i].textContent,playlistItems[j].textContent]=[playlistItems[j].textContent,playlistItems[i].textContent];
-            [playlistItems[i].dataset.src,playlistItems[j].dataset.src]=[playlistItems[j].dataset.src,playlistItems[i].dataset.src];
+    function stopSong() {
+        player.pause();
+        player.currentTime = 0;
+        isPlaying = false;
+        playPauseBtn.textContent = "▶️";
+    }
+
+    function nextSong() {
+        currentIndex = isRepeat ? currentIndex : (currentIndex + 1) % playlist.length;
+        loadSong(currentIndex);
+    }
+
+    function prevSong() {
+        currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+        loadSong(currentIndex);
+    }
+
+    function shufflePlaylist() {
+        for (let i = playlist.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
+            [playlistItems[i].textContent, playlistItems[j].textContent] = [playlistItems[j].textContent, playlistItems[i].textContent];
+            [playlistItems[i].dataset.src, playlistItems[j].dataset.src] = [playlistItems[j].dataset.src, playlistItems[i].dataset.src];
         }
-        currentIndex=0; loadSong(currentIndex);
+        currentIndex = 0;
+        loadSong(currentIndex);
     }
-    function toggleRepeat(){ isRepeat=!isRepeat; alert("Repeat "+(isRepeat?"ON":"OFF")); }
 
-    playlistItems.forEach((li,idx)=>{ li.addEventListener("click",()=>{ currentIndex=idx; loadSong(currentIndex); }); });
-    player.addEventListener("ended",nextSong);
-    player.addEventListener("timeupdate",()=>{
-        if(player.duration){ progressBar.max=player.duration; progressBar.value=player.currentTime; currentTimeEl.textContent=formatTime(player.currentTime); durationEl.textContent=formatTime(player.duration); }
+    function toggleRepeat() {
+        isRepeat = !isRepeat;
+        alert("Repeat " + (isRepeat ? "ON" : "OFF"));
+    }
+
+    // -------------------- EVENT LISTENERS --------------------
+    playlistItems.forEach((li, idx) => li.addEventListener("click", () => {
+        currentIndex = idx;
+        loadSong(currentIndex);
+    }));
+
+    playPauseBtn.addEventListener("click", playPause);
+    stopBtn.addEventListener("click", stopSong);
+    nextBtn.addEventListener("click", nextSong);
+    prevBtn.addEventListener("click", prevSong);
+    shuffleBtn.addEventListener("click", shufflePlaylist);
+    repeatBtn.addEventListener("click", toggleRepeat);
+
+    player.addEventListener("ended", nextSong);
+
+    player.addEventListener("timeupdate", () => {
+        if(player.duration){
+            progressBar.max = player.duration;
+            progressBar.value = player.currentTime;
+            currentTimeEl.textContent = formatTime(player.currentTime);
+            durationEl.textContent = formatTime(player.duration);
+        }
     });
-    progressBar.addEventListener("input",()=>{ player.currentTime=progressBar.value; });
 
-    document.getElementById("prev-btn").addEventListener("click",prevSong);
-    document.getElementById("play-pause-btn").addEventListener("click",playPause);
-    document.getElementById("stop-btn").addEventListener("click",stopSong);
-    document.getElementById("next-btn").addEventListener("click",nextSong);
-    document.getElementById("shuffle-btn").addEventListener("click",shufflePlaylist);
-    document.getElementById("repeat-btn").addEventListener("click",toggleRepeat);
+    progressBar.addEventListener("input", () => { player.currentTime = progressBar.value; });
 
-    if(playlist.length>0) loadSong(currentIndex);
+    // -------------------- iOS / PWA AUDIO UNLOCK --------------------
+    document.body.addEventListener("click", () => {
+        if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    }, {once:true});
 
-    // -------- Logo pulse/glow --------
-    const logo = document.getElementById("soundio-logo");
-    const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    const source = audioCtx.createMediaElementSource(player);
-    const analyser = audioCtx.createAnalyser();
-    source.connect(analyser); analyser.connect(audioCtx.destination);
-    analyser.fftSize=256;
-    const dataArray=new Uint8Array(analyser.frequencyBinCount);
-    function animateLogo(){
-        requestAnimationFrame(animateLogo);
-        analyser.getByteFrequencyData(dataArray);
-        let sum=0; for(let i=0;i<dataArray.length;i++) sum+=dataArray[i];
-        let avg=sum/dataArray.length;
-        let scale=0.9+(avg/255)*0.3;
-        let glow=(avg/255)*20;
-        logo.style.transform=`scale(${scale})`;
-        logo.style.boxShadow=`0 0 ${glow}px rgba(230,194,41,0.8)`;
-    }
-    animateLogo();
-    document.body.addEventListener("click",()=>{ if(audioCtx.state==="suspended") audioCtx.resume(); },{once:true});
+    // -------------------- OPTIONAL AUTOPLAY --------------------
+    // if(playlist.length > 0) loadSong(currentIndex);
 });
 </script>
+
 </body>
 </html>
+
