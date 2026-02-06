@@ -1,16 +1,53 @@
-<div id="logo-container">
-  <img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo">
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='picture/soundiologo.png') }}">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='picture/soundiologo.png') }}">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Soundio">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<title>SOUNDIO</title>
 
 <style>
+body { background:#f5e895; font-family:Montserrat,sans-serif; margin:0; text-align:center; }
+h1 { background:#000; color:#E6C229; margin:0; padding:15px; }
+#playlist { list-style:none; padding:0; margin:10px; max-height:220px; overflow-y:auto; }
+#playlist li { padding:10px; cursor:pointer; border-bottom:1px solid #777853; }
+#playlist li:hover { background:#EBD671; }
+#playlist li.active { background:#000; color:#E6C229; font-weight:bold; }
+.player-container { margin-top:15px; }
+audio { display:block; width:90%; margin:10px auto; }
+button { background:#656648; color:#F4F1DE; border:none; padding:10px 16px; margin:5px; border-radius:6px; cursor:pointer; }
+button:hover { background:#8c9352; }
+
+#current-song-container {
+ width:90%; overflow:hidden; white-space:nowrap; margin:10px auto;
+ border-radius:6px; background:#E6C229; padding:8px 12px; text-align:left;
+}
+
+#current-song {
+ font-weight:bold; font-size:18px; color:#000;
+ white-space:nowrap; display:inline-block;
+}
+
+@keyframes scroll {
+ 0%{transform:translateX(100%);}
+ 100%{transform:translateX(-100%);}
+}
+
 #logo-container { 
   position: relative; 
-  height: 150px; /* space for side-to-side motion */
+  height:150px; /* space for side-to-side motion */
 }
 
 #soundio-logo {
   position: absolute;
-  width: 110px;
+  width:110px;
   aspect-ratio:1/1;
   border-radius:50%;
   object-fit:cover;
@@ -21,44 +58,165 @@
   transition: box-shadow 0.05s linear;
 }
 </style>
+</head>
+
+<body>
+
+<div id="logo-container">
+  <img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo">
+</div>
+
+<h1>
+<svg width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-right:6px;">
+  <path fill="#E6C229" d="M9 17V5l12-2v12"/>
+  <circle fill="#E6C229" cx="6" cy="18" r="3"/>
+  <circle fill="#E6C229" cx="18" cy="16" r="3"/>
+</svg>
+
+SOUNDIO
+
+<svg width="28" height="28" viewBox="0 0 24 24" style="vertical-align:middle; margin-left:6px;">
+  <path fill="#E6C229" d="M9 17V5l12-2v12"/>
+  <circle fill="#E6C229" cx="6" cy="18" r="3"/>
+  <circle fill="#E6C229" cx="18" cy="16" r="3"/>
+</svg>
+</h1>
+
+<div id="current-song-container">
+  <span id="current-song">🎵 Select a song to play 🎵</span>
+</div>
+
+<ul id="playlist">
+{% for song in playlist %}
+<li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">{{ song }}</li>
+{% endfor %}
+</ul>
+
+<div class="player-container">
+  <audio id="player" playsinline controls></audio>
+
+  <div>
+    <button id="prev-btn">⏮ Prev</button>
+    <button id="play-pause-btn">▶️ Play / ⏸ Pause</button>
+    <button id="stop-btn">⏹ Stop</button>
+    <button id="next-btn">⏭ Next</button>
+    <button id="shuffle-btn">🔀 Shuffle</button>
+    <button id="repeat-btn">🔁 Repeat</button>
+  </div>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
+const player = document.getElementById("player");
+const items = Array.from(document.querySelectorAll("#playlist li"));
+const playBtn = document.getElementById("play-pause-btn");
+const stopBtn = document.getElementById("stop-btn");
+const nextBtn = document.getElementById("next-btn");
+const prevBtn = document.getElementById("prev-btn");
+const shuffleBtn = document.getElementById("shuffle-btn");
+const repeatBtn = document.getElementById("repeat-btn");
+const titleEl = document.getElementById("current-song");
 const logo = document.getElementById("soundio-logo");
+
+let playlist = items.map(li => li.dataset.src);
+let index = 0;
+let isPlaying = false;
+let repeat = false;
+
 let audioCtx, analyser, source, dataArray;
 
-function initAudio(player){
-  if(audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  source = audioCtx.createMediaElementSource(player);
-  analyser = audioCtx.createAnalyser();
-  source.connect(analyser);
-  analyser.connect(audioCtx.destination);
-  analyser.fftSize = 256;
-  dataArray = new Uint8Array(analyser.frequencyBinCount);
-  animateLogo();
+function initAudio(){
+ if(audioCtx) return;
+ audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+ source = audioCtx.createMediaElementSource(player);
+ analyser = audioCtx.createAnalyser();
+ source.connect(analyser);
+ analyser.connect(audioCtx.destination);
+ analyser.fftSize = 256;
+ dataArray = new Uint8Array(analyser.frequencyBinCount);
+ animateLogo();
 }
 
-// Pulsing + side-to-side half-circle motion
+// Pulsing + 3→9 o'clock half-circle motion
 function animateLogo(){
   if(!analyser) return;
   requestAnimationFrame(animateLogo);
-
   analyser.getByteFrequencyData(dataArray);
   let avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
 
-  // Pulse scale
   let scale = 0.9 + (avg/255)*0.3;
 
-  // Half-circle horizontal motion: 3 o'clock → 9 o'clock
   const radius = 60; // half-circle radius
-  const angle = Math.PI * (0.5 + 0.5 * Math.sin(Date.now()/1500)); // oscillate side-to-side
+  const angle = Math.PI * (0.5 + 0.5 * Math.sin(Date.now()/1500)); // side-to-side
   const x = radius * Math.cos(angle);
 
   logo.style.transform = `translateX(${x}px) scale(${scale})`;
   logo.style.boxShadow = `0 0 ${avg/255*20}px rgba(230,194,41,0.8)`;
 }
 
+function updateTitle(){
+ const name = items[index].textContent;
+ titleEl.style.animation="none";
+ titleEl.textContent = "🎶 Now Playing: " + name;
+ let container = document.getElementById("current-song-container").offsetWidth;
+ let textW = titleEl.scrollWidth;
+ if(textW>container){
+  let duration = textW/50;
+  titleEl.style.animation=`scroll ${duration}s linear infinite`;
+ }
+}
+
+function loadSong(i){
+ initAudio();
+ items.forEach(li=>li.classList.remove("active"));
+ items[i].classList.add("active");
+ player.src = playlist[i];
+ player.play();
+ isPlaying = true;
+ playBtn.textContent="⏸";
+ updateTitle();
+}
+
+function playPause(){
+ if(!player.src){ loadSong(index); return; }
+ if(isPlaying){ player.pause(); playBtn.textContent="▶️"; } 
+ else{ player.play(); playBtn.textContent="⏸"; }
+ isPlaying=!isPlaying;
+}
+
+function next(){
+ index = repeat ? index : (index+1)%playlist.length;
+ loadSong(index);
+}
+
+function prev(){
+ index = (index-1+playlist.length)%playlist.length;
+ loadSong(index);
+}
+
+function shuffle(){
+ for(let i=playlist.length-1;i>0;i--){
+  let j=Math.floor(Math.random()*(i+1));
+  [playlist[i],playlist[j]]=[playlist[j],playlist[i]];
+  [items[i].dataset.src,items[j].dataset.src]=[items[j].dataset.src,items[i].dataset.src];
+  [items[i].textContent,items[j].textContent]=[items[j].textContent,items[i].textContent];
+ }
+ index=0;
+ loadSong(index);
+}
+
+items.forEach((li,i)=>{ li.addEventListener("click",()=>{ index=i; loadSong(index); }); });
+
+playBtn.onclick=playPause;
+stopBtn.onclick=()=>{player.pause();player.currentTime=0;isPlaying=false;playBtn.textContent="▶️";};
+nextBtn.onclick=next;
+prevBtn.onclick=prev;
+shuffleBtn.onclick=shuffle;
+repeatBtn.onclick=()=>{repeat=!repeat; alert("Repeat "+(repeat?"ON":"OFF"));};
+player.addEventListener("ended", next);
+
 });
 </script>
+
+</body>
+</html>
