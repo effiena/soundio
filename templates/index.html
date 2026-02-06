@@ -97,15 +97,26 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPlaying = false;
     let isRepeat = false;
 
-    function loadSong(index) {
-        player.src = playlist[index];  // set the source dynamically
-        playlistItems.forEach(li => li.classList.remove("active"));
-        playlistItems[index].classList.add("active");
+function loadSong(index){
+    initAudioContext();
+    unlockAudio();
 
-        player.play().catch(err => console.log("Playback failed:", err));
-        isPlaying = true;
-        playPauseBtn.textContent = "⏸";
-    }
+    // Remove "active" class from all songs, highlight current
+    playlistItems.forEach(li => li.classList.remove("active"));
+    playlistItems[index].classList.add("active");
+
+    // 🔹 THIS IS WHERE YOU SET THE AUDIO SOURCE
+    player.src = playlist[currentIndex]; // dynamically sets the correct URL
+
+    console.log("Audio src set to:", player.src);
+
+    player.play().catch(err => console.log("Playback failed:", err));
+    isPlaying = true;
+    playPauseBtn.textContent = "⏸";
+
+    updateCurrentSongTitle();
+}
+
 
     function playPause() {
         if (!player.src && playlist.length > 0) { 
