@@ -4,8 +4,13 @@
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f5e895",
+<<<<<<< HEAD
   "theme_color": "#EBD671",
   "icons": [
+=======
+  "theme_color": "#EBD671"
+"icons": [
+>>>>>>> 9f3ce4aa08778365c426fe2e4726f609feab8000
   {
     "src": "static/picture/soundiologo.png",
     "sizes": "192x192",
@@ -17,3 +22,8 @@
     "type": "image/png"
   }
 ]
+<<<<<<< HEAD
+=======
+
+}
+>>>>>>> 9f3ce4aa08778365c426fe2e4726f609feab8000

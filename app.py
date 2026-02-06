@@ -1,5 +1,5 @@
 from urllib.parse import quote
-from flask import Flask, render_template, send_from_directory, url_for, request, jsonify
+from flask import Flask, render_template, send_from_directory, url_for, request, jsonify, send_file
 import os
 import random
 
@@ -32,15 +32,16 @@ def index():
 
 @app.route("/music/<path:filename>")
 def music(filename):
-    file_path = os.path.join(MUSIC_DIR, filename)
-    if not os.path.exists(file_path):
-        return "File not found", 404
-
-    # serve mp3 with headers for mobile/Cloudflare
-    response = send_from_directory(MUSIC_DIR, filename, mimetype="audio/mpeg")
-    response.headers["Accept-Ranges"] = "bytes"
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    return response
+    file_path = os.path.join("static", "music", filename)
+    return send_file(
+        file_path,
+        mimetype="audio/mpeg",
+        as_attachment=False,
+        conditional=True
+    )
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('.', 'manifest.json')
 
 @app.route("/songs")
 def songs():
@@ -49,6 +50,9 @@ def songs():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+
+
 
 
 
