@@ -118,29 +118,30 @@ button:hover { background-color:#8c9352; }
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    // -------------------- ELEMENTS --------------------
+    // ---------- DOM ELEMENTS ----------
     const player = document.getElementById("player");
     const playlistItems = Array.from(document.querySelectorAll("#playlist li"));
-    const currentSongTitle = document.getElementById("current-song");
     const progressBar = document.getElementById("progress-bar");
     const currentTimeEl = document.getElementById("current");
     const durationEl = document.getElementById("duration");
-    const logo = document.getElementById("soundio-logo");
+    const currentSongTitle = document.getElementById("current-song");
 
     const playPauseBtn = document.getElementById("play-pause-btn");
-    const prevBtn = document.getElementById("prev-btn");
-    const nextBtn = document.getElementById("next-btn");
     const stopBtn = document.getElementById("stop-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
     const shuffleBtn = document.getElementById("shuffle-btn");
     const repeatBtn = document.getElementById("repeat-btn");
 
-    // -------------------- STATE --------------------
+    const logo = document.getElementById("soundio-logo");
+
+    // ---------- PLAYER STATE ----------
     let playlist = playlistItems.map(li => li.dataset.src);
     let currentIndex = 0;
     let isPlaying = false;
     let isRepeat = false;
 
-    // -------------------- AUDIO CONTEXT --------------------
+    // ---------- AUDIO CONTEXT ----------
     let audioCtx = null;
     let analyser = null;
     let source = null;
@@ -148,33 +149,40 @@ document.addEventListener("DOMContentLoaded", () => {
     let animationStarted = false;
 
     function initAudioContext() {
-        if (audioCtx) return;
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            source = audioCtx.createMediaElementSource(player);
+            analyser = audioCtx.createAnalyser();
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            analyser.fftSize = 256;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        source = audioCtx.createMediaElementSource(player);
-        analyser = audioCtx.createAnalyser();
-
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-
-        analyser.fftSize = 256;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-        if (!animationStarted) {
-            animationStarted = true;
-            animateLogo();
+            if (!animationStarted) {
+                animationStarted = true;
+                animateLogo();
+            }
         }
     }
+
+    function unlockAudio() {
+        if (audioCtx && audioCtx.state === "suspended") {
+            audioCtx.resume().then(() => {
+                console.log("AudioContext resumed!");
+            });
+        }
+    }
+
+    document.body.addEventListener("click", unlockAudio, { once: true });
+    document.body.addEventListener("touchstart", unlockAudio, { once: true });
 
     function animateLogo() {
         if (!analyser) return;
         requestAnimationFrame(animateLogo);
-
         analyser.getByteFrequencyData(dataArray);
 
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-
         const avg = sum / dataArray.length;
         const scale = 0.9 + (avg / 255) * 0.3;
         const glow = (avg / 255) * 20;
@@ -183,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
         logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
     }
 
-    // -------------------- UTILS --------------------
+    // ---------- HELPERS ----------
     function formatTime(sec) {
         if (isNaN(sec)) return "00:00";
         const m = Math.floor(sec / 60);
@@ -192,32 +200,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateCurrentSongTitle() {
-        currentSongTitle.classList.add("fade-out");
-        setTimeout(() => {
-            currentSongTitle.textContent = `🎶 Now Playing: ${playlistItems[currentIndex].textContent}`;
-            currentSongTitle.classList.remove("fade-out");
+        const songName = playlistItems[currentIndex].textContent;
+        currentSongTitle.style.animation = "none";
+        currentSongTitle.textContent = `🎶 Now Playing: ${songName}`;
 
-            const containerWidth = document.getElementById("current-song-container").offsetWidth;
-            const textWidth = currentSongTitle.scrollWidth;
-            if (textWidth > containerWidth) {
-                const duration = textWidth / 50;
-                currentSongTitle.style.animation = `scroll ${duration}s linear infinite`;
-            } else {
-                currentSongTitle.style.animation = "none";
-            }
-        }, 500);
+        const containerWidth = document.getElementById("current-song-container").offsetWidth;
+        const textWidth = currentSongTitle.scrollWidth;
+        if (textWidth > containerWidth) {
+            const duration = textWidth / 50;
+            currentSongTitle.style.animation = `scroll ${duration}s linear infinite`;
+        }
     }
 
-    // -------------------- SONG CONTROL --------------------
+    // ---------- SONG CONTROL ----------
     function loadSong(index) {
         initAudioContext();
-        if (audioCtx.state === "suspended") audioCtx.resume();
+        unlockAudio();
 
         playlistItems.forEach(li => li.classList.remove("active"));
         playlistItems[index].classList.add("active");
 
         player.src = playlist[index];
-        player.play();
+        player.play().catch(err => console.log("Playback failed:", err));
         isPlaying = true;
         playPauseBtn.textContent = "⏸";
 
@@ -263,12 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Repeat " + (isRepeat ? "ON" : "OFF"));
     }
 
-    // -------------------- EVENT LISTENERS --------------------
-    playlistItems.forEach((li, idx) => li.addEventListener("click", () => {
-        currentIndex = idx;
-        loadSong(currentIndex);
-    }));
-
+    // ---------- EVENT LISTENERS ----------
+    playlistItems.forEach((li, idx) => li.addEventListener("click", () => { currentIndex = idx; loadSong(currentIndex); }));
     playPauseBtn.addEventListener("click", playPause);
     stopBtn.addEventListener("click", stopSong);
     nextBtn.addEventListener("click", nextSong);
@@ -277,28 +277,20 @@ document.addEventListener("DOMContentLoaded", () => {
     repeatBtn.addEventListener("click", toggleRepeat);
 
     player.addEventListener("ended", nextSong);
-
     player.addEventListener("timeupdate", () => {
-        if(player.duration){
+        if (player.duration) {
             progressBar.max = player.duration;
             progressBar.value = player.currentTime;
             currentTimeEl.textContent = formatTime(player.currentTime);
             durationEl.textContent = formatTime(player.duration);
         }
     });
-
     progressBar.addEventListener("input", () => { player.currentTime = progressBar.value; });
-
-    // -------------------- iOS / PWA AUDIO UNLOCK --------------------
-    document.body.addEventListener("click", () => {
-        if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
-    }, {once:true});
-
-    // -------------------- OPTIONAL AUTOPLAY --------------------
-    // if(playlist.length > 0) loadSong(currentIndex);
 });
 </script>
 
+
 </body>
 </html>
+
 
