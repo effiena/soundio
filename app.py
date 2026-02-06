@@ -1,3 +1,4 @@
+from urllib.parse import quote
 from flask import Flask, render_template, send_from_directory, url_for, request, jsonify
 import os
 import random
@@ -14,16 +15,20 @@ startCommand = "gunicorn app:app"
 MUSIC_DIR = os.path.join(app.static_folder, "music")
 
 # ------------------ Flask Routes ------------------
-
 @app.route("/")
 def index():
-    print("MUSIC_DIR =", MUSIC_DIR)
-    print("FILES =", os.listdir(MUSIC_DIR))
+    files = os.listdir(MUSIC_DIR)
+    playlist = [f for f in files if f.lower().endswith(".mp3")]
+    playlist.sort(key=str.lower)
+    encoded_playlist = [quote(f) for f in playlist]
 
-    playlist = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
-    return render_template("index.html", playlist=playlist)
-
-
+    # Pass zip explicitly to Jinja2
+    return render_template(
+        "index.html",
+        playlist=playlist,
+        encoded_playlist=encoded_playlist,
+        zip=zip  # <-- add this
+    )
 
 @app.route("/music/<path:filename>")
 def music(filename):

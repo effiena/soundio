@@ -92,8 +92,8 @@ button:hover { background-color:#8c9352; }
 </div>
 
 <ul id="playlist">
-    {% for song in playlist %}
-        <li data-src="{{ url_for('music', filename=song) }}">{{ song }}</li>
+    {% for song, encoded in zip(playlist, encoded_playlist) %}
+        <li data-src="{{ url_for('music', filename=encoded) }}">{{ song }}</li>
     {% endfor %}
 </ul>
 
@@ -288,7 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
     progressBar.addEventListener("input", () => { player.currentTime = progressBar.value; });
 });
 </script>
-
 
 </body>
 </html>
