@@ -26,33 +26,29 @@ audio { display:block; width:90%; margin:10px auto; }
 button { background:#656648; color:#F4F1DE; border:none; padding:10px 16px; margin:5px; border-radius:6px; cursor:pointer; }
 button:hover { background:#8c9352; }
 
-
 #soundio-logo {
     width: 110px;
     aspect-ratio: 1 / 1;
     border-radius: 50%;
     object-fit: cover;
-    /* base box shadow for glow */
-    box-shadow: 0 0 10px rgba(230,194,41,0.5);
-    /* add border */
-    border: 4px solid yellow;
-    /* animation transition for scale & glow */
+    border: 4px solid yellow; /* base border */
+    box-shadow: 0 0 10px rgba(230,194,41,0.5); /* base glow */
     transition: transform 0.05s linear, box-shadow 0.05s linear;
     position: relative;
     z-index: 1;
 }
 
-/* glowing wave effect */
+/* glowing wave pseudo-element */
 #soundio-logo::after {
     content: '';
     position: absolute;
     top: -6px; left: -6px; right: -6px; bottom: -6px;
     border-radius: 50%;
     border: 3px solid black;
-    box-shadow: 0 0 15px yellow, 0 0 25px yellow, 0 0 35px yellow;
-    animation: pulseWave 1s infinite alternate;
+    box-shadow: 0 0 10px yellow, 0 0 20px yellow, 0 0 30px yellow;
     z-index: -1;
 }
+
 
 @keyframes pulseWave {
     0% {
@@ -87,6 +83,16 @@ button:hover { background:#8c9352; }
  100%{transform:translateX(-100%);}
 }
 
+    #soundio-logo::after {
+    content: '';
+    position: absolute;
+    top: -6px; left: -6px; right: -6px; bottom: -6px;
+    border-radius: 50%;
+    border: 3px solid black;
+    transform: scale(var(--wave-scale,1));
+    box-shadow: 0 0 calc(var(--wave-glow,10px)) yellow, 0 0 calc(var(--wave-glow,20px)) yellow, 0 0 calc(var(--wave-glow,30px)) yellow;
+    z-index: -1;
+}
 #logo-container { text-align:center; margin-top:15px; }
 
 #soundio-logo {
@@ -164,7 +170,7 @@ function initAudio(){
  animateLogo();
 }
 
-function animateLogo(){
+ /*function animateLogo(){
  if(!analyser) return;
  requestAnimationFrame(animateLogo);
  analyser.getByteFrequencyData(dataArray);
@@ -173,6 +179,34 @@ function animateLogo(){
  let glow = (avg/255)*20;
  logo.style.transform = `scale(${scale})`;
  logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+}*/
+
+function animateLogo(){
+    if(!analyser) return;
+    requestAnimationFrame(animateLogo);
+    analyser.getByteFrequencyData(dataArray);
+    let sum = 0;
+    dataArray.forEach(v => sum += v);
+    let avg = sum / dataArray.length;
+
+    const logo = document.getElementById("soundio-logo");
+    if(logo){
+        // music-beat pulsing
+        const scale = 0.9 + (avg / 255) * 0.3;
+        // main glow
+        const glow = (avg / 255) * 20;
+
+        logo.style.transform = `scale(${scale})`;
+        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+
+        // glowing wave synced with music
+        const wave = logo.querySelector('::after');
+        if(logo.style.setProperty){
+            const waveSize = 1 + (avg / 255) * 0.3;
+            logo.style.setProperty('--wave-scale', waveSize);
+            logo.style.setProperty('--wave-glow', glow);
+        }
+    }
 }
 
 function updateTitle(){
