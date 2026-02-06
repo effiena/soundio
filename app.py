@@ -17,9 +17,12 @@ MUSIC_DIR = os.path.join(app.static_folder, "music")
 
 @app.route("/")
 def index():
-    get all mp3 files
+    print("MUSIC_DIR =", MUSIC_DIR)
+    print("FILES =", os.listdir(MUSIC_DIR))
+
     playlist = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
     return render_template("index.html", playlist=playlist)
+
 
 
 @app.route("/music/<path:filename>")
@@ -41,4 +44,6 @@ def songs():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
+
 
