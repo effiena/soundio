@@ -12,16 +12,7 @@
 
 <title>SOUNDIO</title>
 <style>
-body 
-    <div id="logo-container">
-    <img
-        src="{{ url_for('static', filename='picture/soundiologo.png') }}"
-        alt="Soundio Logo"
-        id="soundio-logo"
-    >
-</div>
-
-    { background:#f5e895; font-family:Montserrat,sans-serif; margin:0; text-align:center; }
+body { background:#f5e895; font-family:Montserrat,sans-serif; margin:0; text-align:center; }
 h1 { background:#000; color:#E6C229; margin:0; padding:15px; }
 #playlist { list-style:none; padding:0; margin:10px; max-height:220px; overflow-y:auto; }
 #playlist li { padding:10px; cursor:pointer; border-bottom:1px solid #777853; }
@@ -37,9 +28,30 @@ button:hover { background:#8c9352; }
 #current-song-container { width:90%; overflow:hidden; white-space:nowrap; margin:10px auto; border-radius:6px; background:#E6C229; padding:8px 12px; text-align:left; }
 #current-song { font-weight:bold; font-size:18px; color:#000; white-space:nowrap; display:inline-block; transition:opacity 0.5s ease; }
 @keyframes scroll { 0%{transform:translateX(100%);} 100%{transform:translateX(-100%);} }
+#logo-container {
+    text-align: center;
+    margin-top: 15px;
+}
+
+#soundio-logo {
+    width: 110px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(230,194,41,0.5);
+    transition: transform 0.05s linear, box-shadow 0.05s linear;
+}
+
 </style>
 </head>
 <body>
+        <div id="logo-container">
+    <img
+        src="{{ url_for('static', filename='picture/soundiologo.png') }}"
+        alt="Soundio Logo"
+        id="soundio-logo"
+    >
+</div>
 
 <h1>🎵 SOUNDIO 🎵</h1>
 
