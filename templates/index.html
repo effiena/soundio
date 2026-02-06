@@ -40,7 +40,7 @@ button:hover { background:#8c9352; }
 
 <ul id="playlist">
     {% for song in playlist %}
-        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">{{ song }}</li>
+        <li data-src="{{ url_for('music', filename=song) }}">{{ song }}</li>
     {% endfor %}
 </ul>
 
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function loadSong(index){
+function loadSong(index){
     initAudioContext();
     unlockAudio();
 
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     prevBtn.addEventListener("click", prevSong);
     shuffleBtn.addEventListener("click", shufflePlaylist);
     repeatBtn.addEventListener("click", toggleRepeat);
-
+  
     player.addEventListener("ended", nextSong);
     player.addEventListener("timeupdate",()=>{
         if(player.duration){
@@ -193,11 +193,21 @@ document.addEventListener("DOMContentLoaded", () => {
             currentTimeEl.textContent = formatTime(player.currentTime);
             durationEl.textContent = formatTime(player.duration);
         }
+
+    if (progressBar) {
+    progressBar.addEventListener("input", () => { player.currentTime = progressBar.value; });
+    player.addEventListener("timeupdate", () => {
+        if(player.duration){
+            progressBar.max = player.duration;
+            progressBar.value = player.currentTime;
+            currentTimeEl.textContent = formatTime(player.currentTime);
+            durationEl.textContent = formatTime(player.duration);
+        }
     });
+}
+player.addEventListener("ended", nextSong);
 
-        progressBar.addEventListener("input",()=>{ player.currentTime = progressBar.value; });
 
-});
     </script>
     </body>
 </html>
