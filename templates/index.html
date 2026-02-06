@@ -97,6 +97,19 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPlaying = false;
     let isRepeat = false;
 
+    function initAudioContext(){
+    if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(player);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        if(!animationStarted){ animationStarted=true; animateLogo(); }
+    }
+}
+
 function loadSong(index){
     initAudioContext();
     unlockAudio();
