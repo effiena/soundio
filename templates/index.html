@@ -142,6 +142,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function loadSong(index){
+        initAudioContext();
+        unlockAudio();
+
+        playlistItems.forEach(li => li.classList.remove("active"));
+        playlistItems[index].classList.add("active");
+
+        player.src = playlist[index];
+
+    // Add this to see what URL is being used
+        console.log("Audio src set to:", player.src);
+
+        player.play().catch(err => console.log("Playback failed:", err));
+        isPlaying = true;
+        playPauseBtn.textContent = "⏸";
+
+        updateCurrentSongTitle();
+
         initAudioContext(); unlockAudio();
         playlistItems.forEach(li=>li.classList.remove("active"));
         playlistItems[index].classList.add("active");
