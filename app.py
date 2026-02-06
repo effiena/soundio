@@ -39,7 +39,9 @@ def music(filename):
         as_attachment=False,
         conditional=True
     )
-
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory('.', 'manifest.json')
 
 @app.route("/songs")
 def songs():
