@@ -142,31 +142,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function loadSong(index){
-        initAudioContext();
-        unlockAudio();
+    initAudioContext();
+    unlockAudio();
 
-        playlistItems.forEach(li => li.classList.remove("active"));
-        playlistItems[index].classList.add("active");
+    playlistItems.forEach(li => li.classList.remove("active"));
+    playlistItems[index].classList.add("active");
 
-        player.src = playlist[index];
+    player.src = playlist[index];
+    console.log("Audio src set to:", player.src);
 
-    // Add this to see what URL is being used
-        console.log("Audio src set to:", player.src);
+    player.play().catch(err => console.log("Playback failed:", err));
+    isPlaying = true;
+    playPauseBtn.textContent = "⏸";
 
-        player.play().catch(err => console.log("Playback failed:", err));
-        isPlaying = true;
-        playPauseBtn.textContent = "⏸";
-
-        updateCurrentSongTitle();
-
-        initAudioContext(); unlockAudio();
-        playlistItems.forEach(li=>li.classList.remove("active"));
-        playlistItems[index].classList.add("active");
-        player.src = playlist[index];
-        player.play().catch(err=>console.log("Playback failed:", err));
-        isPlaying=true; playPauseBtn.textContent="⏸";
-        updateCurrentSongTitle();
-    }
+    updateCurrentSongTitle();
+}
 
     function playPause(){ 
         if(!player.src && playlist.length>0){ loadSong(currentIndex); return; }
@@ -208,8 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
         progressBar.addEventListener("input",()=>{ player.currentTime = progressBar.value; });
 
 });
-
-</script>
-
-</body>
+    </script>
+    </body>
 </html>
