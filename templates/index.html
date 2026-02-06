@@ -48,11 +48,6 @@ button:hover { background:#8c9352; }
 <div class="player-container">
     <audio id="player" playsinline controls></audio>
 
-   <!--<div id="progress-container">
-        <span id="current">00:00</span>
-        <input type="range" id="progress-bar" value="0" step="0.01">
-        <span id="duration">00:00</span>
-    </div>-->
 
     <div>
         <button id="prev-btn">⏮ Prev</button>
@@ -192,18 +187,6 @@ function loadSong(index){
             progressBar.value = player.currentTime;
             currentTimeEl.textContent = formatTime(player.currentTime);
             durationEl.textContent = formatTime(player.duration);
-        }
-
-    if (progressBar) {
-    progressBar.addEventListener("input", () => { player.currentTime = progressBar.value; });
-    player.addEventListener("timeupdate", () => {
-        if(player.duration){
-            progressBar.max = player.duration;
-            progressBar.value = player.currentTime;
-            currentTimeEl.textContent = formatTime(player.currentTime);
-            durationEl.textContent = formatTime(player.duration);
-        }
-    });
 }
 player.addEventListener("ended", nextSong);
 
