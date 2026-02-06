@@ -40,32 +40,20 @@ button:hover { background:#8c9352; }
  100%{transform:translateX(-100%);}
 }
 
-#logo-container { text-align:center; margin-top:15px; }
+#logo-container { 
+ position: relative;
+ height: 150px; /* space for half-circle motion */
+}
 
 #soundio-logo {
- width:110px;
+ position: absolute;
+ width: 110px;
  aspect-ratio:1/1;
  border-radius:50%;
  object-fit:cover;
  box-shadow:0 0 10px rgba(230,194,41,0.5);
- transition: transform 0.05s linear, box-shadow 0.05s linear;
-}
-
-#music-icon svg {
- width:32px;
- height:32px;
- vertical-align:middle;
- filter: drop-shadow(0 0 6px #E6C229);
-}
-
-.orbit {
- transform-origin: 12px 12px; /* center of the SVG */
- animation: halfCircle 3s linear infinite alternate;
-}
-
-@keyframes halfCircle {
- from { transform: rotate(0deg); }   /* 3 o’clock */
- to { transform: rotate(180deg); }  /* 9 o’clock */
+ transform-origin: center center;
+ transition: box-shadow 0.05s linear;
 }
 </style>
 </head>
@@ -77,21 +65,7 @@ button:hover { background:#8c9352; }
 </div>
 
 <h1>
-<!-- Left music icon -->
-<svg class="orbit" viewBox="0 0 24 24">
-  <path fill="#E6C229" d="M9 17V5l12-2v12"/>
-  <circle fill="#E6C229" cx="6" cy="18" r="3"/>
-  <circle fill="#E6C229" cx="18" cy="16" r="3"/>
-</svg>
-
-SOUNDIO
-
-<!-- Right music icon -->
-<svg class="orbit" viewBox="0 0 24 24">
-  <path fill="#E6C229" d="M9 17V5l12-2v12"/>
-  <circle fill="#E6C229" cx="6" cy="18" r="3"/>
-  <circle fill="#E6C229" cx="18" cy="16" r="3"/>
-</svg>
+🎵 SOUNDIO 🎵
 </h1>
 
 <div id="current-song-container">
@@ -153,14 +127,29 @@ function initAudio(){
 function animateLogo(){
  if(!analyser) return;
  requestAnimationFrame(animateLogo);
+
  analyser.getByteFrequencyData(dataArray);
  let avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+
+ // Pulse scale
  let scale = 0.9 + (avg/255)*0.3;
- let glow = (avg/255)*20;
- logo.style.transform = `scale(${scale})`;
- logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+
+ // Half-circle orbit motion
+ const radius = 60; // radius of the half-circle
+ const angle = Math.PI * (0.5 + 0.5 * Math.sin(Date.now()/1000)); // oscillates 0 → 180°
+ const x = radius * Math.cos(angle);
+ const y = -radius * Math.sin(angle);
+
+ // Rotation based on position
+ const rotation = (angle * 180 / Math.PI) - 90; // rotate as it moves
+
+ logo.style.left = `calc(50% + ${x}px - 55px)`; // center minus half width
+ logo.style.top = `${y + 50}px`; // offset from container top
+ logo.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+ logo.style.boxShadow = `0 0 ${avg/255*20}px rgba(230,194,41,0.8)`;
 }
 
+// Playlist title scroll
 function updateTitle(){
  const name = items[index].textContent;
  titleEl.style.animation="none";
