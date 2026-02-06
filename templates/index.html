@@ -61,15 +61,13 @@ button:hover { background:#8c9352; }
 
 <ul id="playlist">
     {% for song in playlist %}
-        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">{{ song }}</li>
+        <!-- Use url_for to generate a proper static URL -->
+        <li data-src="{{ url_for('static', filename='music/' ~ song) | safe }}">{{ song }}</li>
     {% endfor %}
 </ul>
 
-
 <div class="player-container">
-    <audio id="player" playsinline controls>
-    </audio>
-
+    <audio id="player" playsinline controls></audio>
 
     <div>
         <button id="prev-btn">⏮ Prev</button>
@@ -80,6 +78,7 @@ button:hover { background:#8c9352; }
         <button id="repeat-btn">🔁 Repeat</button>
     </div>
 </div>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
