@@ -98,6 +98,37 @@ document.addEventListener("DOMContentLoaded", () => {
     let isPlaying = false;
     let isRepeat = false;
 
+    let startTime = performance.now();
+
+function animateLogo() {
+    requestAnimationFrame(animateLogo);
+
+    if (!logo) return;
+
+    const t = (performance.now() - startTime) / 1000;
+
+    // ---------- BASE IDLE PULSE ----------
+    const idlePulse = 0.04 * Math.sin(t * 2.2); // smooth breathing
+    let scale = 1 + idlePulse;
+    let glow = 10 + Math.abs(idlePulse) * 80;
+
+    // ---------- AUDIO REACTIVE BOOST ----------
+    if (analyser && dataArray) {
+        analyser.getByteFrequencyData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const avg = sum / dataArray.length / 255;
+
+        scale += avg * 0.25;
+        glow += avg * 35;
+    }
+
+    logo.style.transform = `scale(${scale})`;
+    logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.85)`;
+}
+
+
     function updateCurrentSongTitle() {
         const songName = playlistItems[currentIndex].textContent;
         currentSongTitle.textContent = `🎶 Now Playing: ${songName}`;
