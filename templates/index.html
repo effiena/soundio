@@ -96,6 +96,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentIndex = 0;
     let isPlaying = false;
     let isRepeat = false;
+    let audioCtx = null;
+    let analyser = null;
+    let source = null;
+    let dataArray = null;
+    let animationStarted = false;
+
 
     function initAudioContext(){
     if(!audioCtx){
@@ -113,6 +119,13 @@ document.addEventListener("DOMContentLoaded", () => {
 function loadSong(index){
     initAudioContext();
     unlockAudio();
+
+    function unlockAudio() {
+    if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+
+    document.body.addEventListener("click", unlockAudio, { once:true });
+    document.body.addEventListener("touchstart", unlockAudio, { once:true });
 
     // Remove "active" class from all songs, highlight current
     playlistItems.forEach(li => li.classList.remove("active"));
@@ -174,6 +187,23 @@ function loadSong(index){
         isRepeat = !isRepeat;
         alert("Repeat " + (isRepeat ? "ON" : "OFF"));
     }
+function animateLogo() {
+    if(!analyser) return;
+    requestAnimationFrame(animateLogo);
+
+    analyser.getByteFrequencyData(dataArray);
+    let sum = 0;
+    dataArray.forEach(v => sum += v);
+    let avg = sum / dataArray.length;
+
+    const logo = document.getElementById("soundio-logo");
+    if(logo) {
+        const scale = 0.9 + (avg / 255) * 0.3;
+        const glow = (avg / 255) * 20;
+        logo.style.transform = `scale(${scale})`;
+        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+    }
+}
 
     // Playlist click
     playlistItems.forEach((li, idx) => li.addEventListener("click", () => {
