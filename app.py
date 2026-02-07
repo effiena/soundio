@@ -44,9 +44,9 @@ def manifest():
     return send_from_directory('.', 'manifest.json')
 
 
-@app.route('/LICENSE.txt')
+@app.route('/license.txt')
 def license_file():
-    return send_from_directory('.', 'LICENSE.txt')
+    return send_from_directory('.', 'license.txt')
 
 @app.route("/songs")
 def songs():
