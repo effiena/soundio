@@ -160,7 +160,7 @@ footer {
 <div id="current-song-container">
     <span id="current-song">🎵 Select a song to play 🎵</span>
 </div>
-
+<!--
 <ul id="playlist">
 {% for song in playlist %}
 <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">
@@ -168,6 +168,26 @@ footer {
 </li>
 {% endfor %}
 </ul>
+    -->
+<ul id="playlist">
+{% for song in playlist %}
+<li 
+    data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}" 
+    data-genre="{{ song.genre|default('Malay') }}">
+    {{ song.name }}
+</li>
+{% endfor %}
+</ul>
+    
+    <div style="margin:15px 0;">
+    <label for="genre-filter">Filter by Genre: </label>
+    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
+        <option value="all">All</option>
+        <option value="Malay">Malay</option>
+        <option value="English">English</option>
+        <option value="Mandarin">Mandarin</option>
+    </select>
+</div>
 
 <div class="player-container">
     <audio id="player" playsinline controls></audio>
@@ -181,16 +201,6 @@ footer {
     </div>
 </div>
 
-<div style="margin-top:20px;">
-    <button onclick="showAbout()" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
-        About
-    </button>
-</div>
-
-<footer>
-    © 2026 Soundio Music App. All rights reserved. <br>
-    Created by Asli.Tech. <a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
-</footer>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -308,10 +318,17 @@ player.addEventListener("ended", next);
 
 });
 
-// About Button
-function showAbout(){
-    alert("Soundio Music App\n© 2026 Asli.Tech");
-}
+<div style="margin-top:20px;">
+    <button onclick="showAbout()" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
+        About
+    </button>
+</div>
+
+    <footer>
+        © 2026 Soundio Music App. All rights reserved. <br>
+        Created by Asli.Tech. <a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
+    </footer>
+
 </script>
 
 </body>
