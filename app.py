@@ -43,6 +43,11 @@ def music(filename):
 def manifest():
     return send_from_directory('.', 'manifest.json')
 
+
+@app.route('/license.txt')
+def license_file():
+    return send_from_directory('.', 'license.txt')
+
 @app.route("/songs")
 def songs():
     playlist = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
