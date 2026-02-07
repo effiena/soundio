@@ -14,6 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
+<style>
 html, body {
     width: 100%;
     max-width: 100%;
@@ -52,8 +53,8 @@ html, body {
     border: 3px solid black;
     transform: scale(var(--wave-scale,1));
     box-shadow: 0 0 calc(var(--wave-glow,10px)) rgb(122, 82, 114), 
-                0 0 calc(var(--wave-glow,20px)) rgb(131,131,112), 
-                0 0 calc(var(--wave-glow,30px)) rgb(154, 72, 225);
+                0 0 calc(var(--wave-glow,20px)) rgb(113, 113, 110), 
+                0 0 calc(var(--wave-glow,30px)) rgb(225, 72, 156);
     z-index: -1;
 }
 
@@ -61,10 +62,10 @@ h1 {
     font-size: 36px;
     font-weight: 700;
     margin: 15px 0;
-    background: linear-gradient(90deg, #a75692, #a75692);
+    background: linear-gradient(90deg, #9c2d7b92, #a75692);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 2px 6px rgba(230,194,41,0.5);
+    text-shadow: 0 2px 6px rgba(44, 6, 15, 0.5);
 }
 
 #current-song-container {
@@ -108,7 +109,7 @@ h1 {
 }
 
 #playlist li:hover { background:#e187cb; }
-#playlist li.active { background:#78784f; color:#9c2d7b; font-weight:bold; }
+#playlist li.active { background:#cf337c; color:#9c2d7b; font-weight:bold; }
 
 .player-container {
     margin-top: 20px;
@@ -134,7 +135,7 @@ button {
     transition: background 0.3s;
 }
 
-button:hover { background:#8c9352; }
+button:hover { background:#c16fa1; }
 
 @keyframes scroll {
   0% { transform: translateX(100%); }
