@@ -157,6 +157,16 @@ footer {
 
 <h1>🎶 SOUNDIO 🎶</h1>
 
+        <div style="margin:15px 0;">
+    <label for="genre-filter">Filter by Genre: </label>
+    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
+        <option value="all">All</option>
+        <option value="Malay">Malay</option>
+        <option value="English">English</option>
+        <option value="Mandarin">Mandarin</option>
+    </select>
+</div>
+
 <div id="current-song-container">
     <span id="current-song">🎵 Select a song to play 🎵</span>
 </div>
@@ -179,15 +189,7 @@ footer {
 {% endfor %}
 </ul>
     
-    <div style="margin:15px 0;">
-    <label for="genre-filter">Filter by Genre: </label>
-    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
-        <option value="all">All</option>
-        <option value="Malay">Malay</option>
-        <option value="English">English</option>
-        <option value="Mandarin">Mandarin</option>
-    </select>
-</div>
+
 
 <div class="player-container">
     <audio id="player" playsinline controls></audio>
