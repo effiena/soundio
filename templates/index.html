@@ -15,6 +15,40 @@
 <title>SOUNDIO</title>
 
 <style>
+
+/* ===== Mobile-Friendly Fix for Soundio ===== */
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;       /* prevents horizontal scroll / background stretching */
+    margin: 0;                /* reset default margin */
+    padding: 0;               /* reset default padding */
+}
+
+body {
+    background: #f5e895;      /* your background color */
+    font-family: Montserrat, sans-serif;
+    text-align: center;
+}
+
+#playlist,
+#current-song-container,
+.player-container,
+#logo-container {
+    width: 90%;               /* keeps content inside screen */
+    max-width: 100%;
+    margin: 10px auto;        /* centered with proper spacing */
+    box-sizing: border-box;   /* ensures padding doesn’t break layout */
+}
+
+h1 {
+    max-width: 100%;
+    margin: 10px auto;
+    padding: 6px 12px;        /* keeps your luxury logo padding intact */
+    box-sizing: border-box;
+}
+
+/* ===== End Mobile-Friendly Fix ===== */
 body { background:#f5e895; font-family:Montserrat,sans-serif; margin:20; text-align:center; }
 /*h1 { background:#464545; color:#E6C229; margin:10; padding:15px; }*/
 /* Luxury / Minimalist SOUNDIO logo */
