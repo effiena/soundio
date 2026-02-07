@@ -14,15 +14,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
-/* ===== PAGE ===== */
 html, body {
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     margin: 0;
     padding: 0;
     font-family: Montserrat, sans-serif;
     background: #f5e895;
     text-align: center;
-    overflow-x: hidden;
 }
 
 #logo-container {
@@ -33,12 +33,12 @@ html, body {
 }
 
 #soundio-logo {
-    width: 120px;
-    aspect-ratio: 1/1;
+    width: 110px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid yellow;
-    box-shadow: 0 0 12px rgba(230,194,41,0.5);
+    box-shadow: 0 0 10px rgba(230,194,41,0.5);
     transition: transform 0.05s linear, box-shadow 0.05s linear;
     position: relative;
     z-index: 1;
@@ -47,12 +47,12 @@ html, body {
 #soundio-logo::after {
     content: '';
     position: absolute;
-    top: -8px; left: -8px; right: -8px; bottom: -8px;
+    top: -6px; left: -6px; right: -6px; bottom: -6px;
     border-radius: 50%;
     border: 3px solid black;
     transform: scale(var(--wave-scale,1));
-    box-shadow: 0 0 calc(var(--wave-glow,10px)) yellow,
-                0 0 calc(var(--wave-glow,20px)) rgb(131,131,112),
+    box-shadow: 0 0 calc(var(--wave-glow,10px)) yellow, 
+                0 0 calc(var(--wave-glow,20px)) rgb(131,131,112), 
                 0 0 calc(var(--wave-glow,30px)) yellow;
     z-index: -1;
 }
@@ -74,8 +74,8 @@ h1 {
     overflow: hidden;
     white-space: nowrap;
     background: #E6C229;
-    border-radius: 10px;
-    padding: 10px 15px;
+    border-radius: 6px;
+    padding: 8px 12px;
     text-align: left;
     box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
@@ -136,13 +136,6 @@ button {
 
 button:hover { background:#8c9352; }
 
-footer {
-    text-align:center;
-    padding:15px 10px;
-    font-size:14px;
-    color:#555;
-}
-
 @keyframes scroll {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
@@ -157,8 +150,8 @@ footer {
 
 <h1>🎶 SOUNDIO 🎶</h1>
 
-        <div style="margin:15px 0;">
-    <label for="genre-filter">Filter by Genre: </label>
+<div style="margin:15px 0;">
+    <label for="genre-filter">Genre: </label>
     <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
         <option value="all">All</option>
         <option value="Malay">Malay</option>
@@ -170,26 +163,14 @@ footer {
 <div id="current-song-container">
     <span id="current-song">🎵 Select a song to play 🎵</span>
 </div>
-<!--
+
 <ul id="playlist">
 {% for song in playlist %}
-<li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">
-🎵 {{ song.replace('.mp3','').replace('_',' ') }}
-</li>
-{% endfor %}
-</ul>
-    -->
-<ul id="playlist">
-{% for song in playlist %}
-<li 
-    data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}" 
-    data-genre="{{ song.genre|default('Malay') }}">
+<li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}" data-genre="{{ song.genre|default('Malay') }}">
     {{ song.name }}
 </li>
 {% endfor %}
 </ul>
-    
-
 
 <div class="player-container">
     <audio id="player" playsinline controls></audio>
@@ -203,149 +184,132 @@ footer {
     </div>
 </div>
 
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-const genreFilter = document.getElementById("genre-filter");
+    const player = document.getElementById("player");
+    const items = Array.from(document.querySelectorAll("#playlist li"));
+    const playBtn = document.getElementById("play-pause-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const shuffleBtn = document.getElementById("shuffle-btn");
+    const repeatBtn = document.getElementById("repeat-btn");
+    const titleEl = document.getElementById("current-song");
+    const logo = document.getElementById("soundio-logo");
+    const genreFilter = document.getElementById("genre-filter");
 
-genreFilter.addEventListener("change", () => {
-    const selected = genreFilter.value;
-    items.forEach(li => {
-        if(selected === "all" || li.dataset.genre === selected){
-            li.style.display = "block";
-        } else {
-            li.style.display = "none";
+    let playlist = items.map(li => li.dataset.src);
+    let index = 0;
+    let isPlaying = false;
+    let repeat = false;
+
+    let audioCtx, analyser, source, dataArray;
+
+    function initAudio() {
+        if(audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(player);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        animateLogo();
+    }
+
+    function animateLogo() {
+        if(!analyser) return;
+        requestAnimationFrame(animateLogo);
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        dataArray.forEach(v => sum += v);
+        let avg = sum / dataArray.length;
+
+        const scale = 0.9 + (avg / 255) * 0.3;
+        const glow = (avg / 255) * 20;
+
+        logo.style.transform = `scale(${scale})`;
+        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+        logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
+        logo.style.setProperty('--wave-glow', glow);
+    }
+
+    function updateTitle() {
+        const name = items[index].textContent;
+        titleEl.style.animation = "none";
+        titleEl.textContent = "🎶 Now Playing: " + name;
+        let container = document.getElementById("current-song-container").offsetWidth;
+        let textW = titleEl.scrollWidth;
+        if(textW > container){
+            let duration = textW / 50;
+            titleEl.style.animation = `scroll ${duration}s linear infinite`;
         }
-    });
-    // Reset to first visible song
-    const firstVisible = items.findIndex(li => li.style.display !== "none");
-    if(firstVisible !== -1) index = firstVisible;
-});
-const player = document.getElementById("player");
-const items = Array.from(document.querySelectorAll("#playlist li"));
-const playBtn = document.getElementById("play-pause-btn");
-const stopBtn = document.getElementById("stop-btn");
-const nextBtn = document.getElementById("next-btn");
-const prevBtn = document.getElementById("prev-btn");
-const shuffleBtn = document.getElementById("shuffle-btn");
-const repeatBtn = document.getElementById("repeat-btn");
-const titleEl = document.getElementById("current-song");
-const logo = document.getElementById("soundio-logo");
-
-let playlist = items.map(li => li.dataset.src);
-let index = 0;
-let isPlaying = false;
-let repeat = false;
-
-let audioCtx, analyser, source, dataArray;
-
-function initAudio(){
-    if(audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    source = audioCtx.createMediaElementSource(player);
-    analyser = audioCtx.createAnalyser();
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    analyser.fftSize = 256;
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-    animateLogo();
-}
-
-function animateLogo(){
-    if(!analyser) return;
-    requestAnimationFrame(animateLogo);
-    analyser.getByteFrequencyData(dataArray);
-    let avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-    const scale = 0.9 + (avg/255)*0.3;
-    const glow = (avg/255)*20;
-    logo.style.transform = `scale(${scale})`;
-    logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
-    logo.style.setProperty('--wave-scale', 1 + (avg/255)*0.3);
-    logo.style.setProperty('--wave-glow', glow);
-}
-
-function updateTitle(){
-    const name = items[index].textContent;
-    titleEl.style.animation="none";
-    titleEl.textContent = "🎶 Now Playing: " + name;
-    let container = document.getElementById("current-song-container").offsetWidth;
-    let textW = titleEl.scrollWidth;
-    if(textW>container){
-        let duration = textW/50;
-        titleEl.style.animation=`scroll ${duration}s linear infinite`;
     }
-}
 
-function loadSong(i){
-    initAudio();
-    items.forEach(li=>li.classList.remove("active"));
-    items[i].classList.add("active");
-    player.src = playlist[i];
-    player.play();
-    isPlaying = true;
-    playBtn.textContent="⏸";
-    updateTitle();
-}
-
-function playPause(){
-    if(!player.src){ loadSong(index); return; }
-    if(isPlaying){
-        player.pause();
-        playBtn.textContent="▶️";
-    } else {
+    function loadSong(i){
+        initAudio();
+        items.forEach(li => li.classList.remove("active"));
+        items[i].classList.add("active");
+        player.src = playlist[i];
         player.play();
+        isPlaying = true;
         playBtn.textContent="⏸";
+        updateTitle();
     }
-    isPlaying=!isPlaying;
-}
 
-function next(){
-    index = repeat ? index : (index+1)%playlist.length;
-    loadSong(index);
-}
-
-function prev(){
-    index = (index-1+playlist.length)%playlist.length;
-    loadSong(index);
-}
-
-function shuffle(){
-    for(let i=playlist.length-1;i>0;i--){
-        let j=Math.floor(Math.random()*(i+1));
-        [playlist[i],playlist[j]]=[playlist[j],playlist[i]];
-        [items[i].dataset.src,items[j].dataset.src]=[items[j].dataset.src,items[i].dataset.src];
-        [items[i].textContent,items[j].textContent]=[items[j].textContent,items[i].textContent];
+    function playPause(){
+        if(!player.src){ loadSong(index); return; }
+        if(isPlaying){
+            player.pause();
+            playBtn.textContent="▶️";
+        } else {
+            player.play();
+            playBtn.textContent="⏸";
+        }
+        isPlaying = !isPlaying;
     }
-    index=0;
-    loadSong(index);
-}
 
-items.forEach((li,i)=>{
-    li.addEventListener("click",()=>{ index=i; loadSong(index); });
+    function next(){ index = repeat ? index : (index + 1) % playlist.length; loadSong(index); }
+    function prev(){ index = (index - 1 + playlist.length) % playlist.length; loadSong(index); }
+    function shuffle(){
+        for(let i = playlist.length-1; i > 0; i--){
+            let j = Math.floor(Math.random() * (i+1));
+            [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
+            [items[i].dataset.src, items[j].dataset.src] = [items[j].dataset.src, items[i].dataset.src];
+            [items[i].textContent, items[j].textContent] = [items[j].textContent, items[i].textContent];
+        }
+        index = 0;
+        loadSong(index);
+    }
+
+    items.forEach((li,i)=>{ li.addEventListener("click", ()=>{ index=i; loadSong(index); }); });
+    playBtn.onclick = playPause;
+    stopBtn.onclick = ()=>{ player.pause(); player.currentTime=0; isPlaying=false; playBtn.textContent="▶️"; };
+    nextBtn.onclick = next;
+    prevBtn.onclick = prev;
+    shuffleBtn.onclick = shuffle;
+    repeatBtn.onclick = ()=>{ repeat = !repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
+    player.addEventListener("ended", next);
+
+    genreFilter.addEventListener("change", () => {
+        const selected = genreFilter.value;
+        items.forEach(li => { li.style.display = (selected === "all" || li.dataset.genre === selected) ? "block" : "none"; });
+        const firstVisible = items.findIndex(li => li.style.display !== "none");
+        if(firstVisible !== -1) index = firstVisible;
+    });
 });
-
-playBtn.onclick=playPause;
-stopBtn.onclick=()=>{player.pause();player.currentTime=0;isPlaying=false;playBtn.textContent="▶️";};
-nextBtn.onclick=next;
-prevBtn.onclick=prev;
-shuffleBtn.onclick=shuffle;
-repeatBtn.onclick=()=>{repeat=!repeat; alert("Repeat "+(repeat?"ON":"OFF"));};
-player.addEventListener("ended", next);
-
-});
+</script>
 
 <div style="margin-top:20px;">
-    <button onclick="showAbout()" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
+    <button onclick="alert('SOUNDIO Music App © 2026 by Asli.Tech');" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
         About
     </button>
 </div>
 
-    <footer>
-        © 2026 Soundio Music App. All rights reserved. <br>
-        Created by Asli.Tech. <a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
-    </footer>
-
-</script>
+<footer style="text-align:center; padding:10px; font-size:14px; color:#555;">
+    © 2026 Soundio Music App. All rights reserved. <br>
+    Created by Asli.Tech. <a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
+</footer>
 
 </body>
 </html>
