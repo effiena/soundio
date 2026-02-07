@@ -179,7 +179,7 @@ button:hover { background:#c16fa1; }
 {% for song in playlist %}
     {# Data-src uses raw filename; JS will encode URI #}
         <li data-src="/static/music/{{ song }}">
-        {{🎵 song.rsplit('.', 1)[0].replace('_', ' ') }}
+        🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}
     </li>
 {% endfor %}
 </ul>
