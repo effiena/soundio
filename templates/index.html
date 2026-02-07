@@ -16,7 +16,23 @@
 
 <style>
 body { background:#f5e895; font-family:Montserrat,sans-serif; margin:20; text-align:center; }
-h1 { background:#464545; color:#E6C229; margin:10; padding:15px; }
+/*h1 { background:#464545; color:#E6C229; margin:10; padding:15px; }*/
+/* Luxury / Minimalist SOUNDIO logo */
+.header h1 {
+    margin: 0;
+    font-size: 32px;           /* slightly bigger, bold but elegant */
+    padding: 6px 12px;         /* shorter padding vertically, keeps it sleek */
+    font-weight: 700;           /* bold for premium feel */
+    color: #E6C229;             /* gold/yellow tone for luxury */
+    background: linear-gradient(90deg, #FFD700, #E6C229);
+    border-radius: 8px;         /* soft rounded corners */
+    text-shadow: 0 2px 6px rgba(230,194,41,0.5); /* subtle glow */
+    font-family: 'Montserrat', sans-serif;  /* elegant modern font */
+    display: inline-block;      /* fits the logo naturally */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+}
 #playlist { list-style:none; padding:0; margin:10px; max-height:220px; overflow-y:auto; }
 #playlist li { padding:10px; cursor:pointer; border-bottom:1px solid #777853; }
 #playlist li:hover { background:#EBD671; }
@@ -25,6 +41,7 @@ h1 { background:#464545; color:#E6C229; margin:10; padding:15px; }
 audio { display:block; width:90%; margin:10px auto; }
 button { background:#656648; color:#ffffffef; border:none; padding:10px 16px; margin:5px; border-radius:6px; cursor:pointer; }
 button:hover { background:#8c9352; }
+
 #soundio-logo::before {
     transform: rotate(var(--wave-rotate, 0deg)) scale(var(--wave-scale,1));
     box-shadow: 0 0 calc(var(--wave-glow,10px)) yellow, 0 0 calc(var(--wave-glow,20px)) yellow;
