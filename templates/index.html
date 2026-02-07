@@ -58,13 +58,26 @@ html, body {
 }
 
 h1 {
-    font-size: 36px;
+    max-width: 100%;
+    margin: 10px auto;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    font-size: 32px;
     font-weight: 700;
-    margin: 15px 0;
+    color: #E6C229; /* keep gold color */
     background: linear-gradient(90deg, #FFD700, #E6C229);
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    display: inline-block;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: 0 2px 6px rgba(230,194,41,0.5);
+
+    /* Add glowing black shadow */
+    text-shadow:
+        0 0 4px black,
+        0 0 8px black,
+        0 0 12px black,
+        0 0 16px black;
 }
 
 #current-song-container {
