@@ -1,0 +1,16 @@
+© 2026 Soundio Music App. All rights reserved.
+Created by Asli.Tech.
+
+This website, including all HTML, CSS, JavaScript, images, and other content,
+is the intellectual property of Soundio Music App unless otherwise stated.
+
+License:
+
+Permission is granted to use the source code for personal, non-commercial purposes only.
+You may not distribute, sell, or modify this code without explicit permission from the owner.
+
+Music Disclaimer:
+
+All music files provided through this app are for personal use only.
+Soundio Music App does not claim copyright over the audio files.
+Users must ensure they have proper rights to any uploaded or played music.
