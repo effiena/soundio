@@ -167,9 +167,9 @@ button:hover { background:#8c9352; }
 <ul id="playlist">
 {% for song in playlist %}
     {% if song is string %}
-        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">🎵{{ song.rsplit('.', 1)[0] }}</li>
+        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}</li>
     {% else %}
-        <li data-src="{{ url_for('static', filename='music/' ~ song.file|urlencode) }}">🎵{{ song.rsplit('.', 1)[0] }}</li>
+        <li data-src="{{ url_for('static', filename='music/' ~ song.file|urlencode) }}">🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}</li>
     {% endif %}
 {% endfor %}
 </ul>
