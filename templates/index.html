@@ -204,7 +204,21 @@ footer {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+const genreFilter = document.getElementById("genre-filter");
 
+genreFilter.addEventListener("change", () => {
+    const selected = genreFilter.value;
+    items.forEach(li => {
+        if(selected === "all" || li.dataset.genre === selected){
+            li.style.display = "block";
+        } else {
+            li.style.display = "none";
+        }
+    });
+    // Reset to first visible song
+    const firstVisible = items.findIndex(li => li.style.display !== "none");
+    if(firstVisible !== -1) index = firstVisible;
+});
 const player = document.getElementById("player");
 const items = Array.from(document.querySelectorAll("#playlist li"));
 const playBtn = document.getElementById("play-pause-btn");
