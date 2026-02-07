@@ -166,9 +166,11 @@ button:hover { background:#8c9352; }
 
 <ul id="playlist">
 {% for song in playlist %}
-<li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}" data-genre="{{ song.genre|default('Malay') }}">
-    {{ song.name }}
-</li>
+    {% if song is string %}
+        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">{{ song }}</li>
+    {% else %}
+        <li data-src="{{ url_for('static', filename='music/' ~ song.file|urlencode) }}">{{ song.name }}</li>
+    {% endif %}
 {% endfor %}
 </ul>
 
