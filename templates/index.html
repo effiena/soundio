@@ -4,164 +4,122 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SOUNDIO</title>
-
 <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='picture/soundiologo.png') }}">
-<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='picture/soundiologo.png') }}">
 <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='picture/soundiologo.png') }}">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Soundio">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+<title>SOUNDIO</title>
+
 <style>
-/* ===== PAGE ===== */
+/* ===== Mobile-Friendly Fix ===== */
 html, body {
     width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     margin: 0;
     padding: 0;
-    font-family: Montserrat, sans-serif;
+}
+body {
     background: #f5e895;
+    font-family: Montserrat, sans-serif;
     text-align: center;
-    overflow-x: hidden;
 }
-
+#playlist,
+#current-song-container,
+.player-container,
 #logo-container {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    position: relative;
+    width: 90%;
+    max-width: 100%;
+    margin: 10px auto;
+    box-sizing: border-box;
 }
-
-#soundio-logo {
-    width: 120px;
-    aspect-ratio: 1/1;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid yellow;
-    box-shadow: 0 0 12px rgba(230,194,41,0.5);
-    transition: transform 0.05s linear, box-shadow 0.05s linear;
-    position: relative;
-    z-index: 1;
-}
-
-#soundio-logo::after {
-    content: '';
-    position: absolute;
-    top: -8px; left: -8px; right: -8px; bottom: -8px;
-    border-radius: 50%;
-    border: 3px solid black;
-    transform: scale(var(--wave-scale,1));
-    box-shadow: 0 0 calc(var(--wave-glow,10px)) yellow,
-                0 0 calc(var(--wave-glow,20px)) rgb(131,131,112),
-                0 0 calc(var(--wave-glow,30px)) yellow;
-    z-index: -1;
-}
-
 h1 {
     max-width: 100%;
     margin: 10px auto;
     padding: 6px 12px;
     box-sizing: border-box;
+}
+/* SOUNDIO Logo */
+.header h1 {
+    margin: 0;
     font-size: 32px;
+    padding: 6px 12px;
     font-weight: 700;
-    color: #E6C229; /* keep gold color */
+    color: #E6C229;
     background: linear-gradient(90deg, #FFD700, #E6C229);
     border-radius: 8px;
+    text-shadow: 0 2px 6px rgba(230,194,41,0.5);
     font-family: 'Montserrat', sans-serif;
     display: inline-block;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+#playlist { list-style:none; padding:0; margin:10px; max-height:220px; overflow-y:auto; }
+#playlist li { padding:10px; cursor:pointer; border-bottom:1px solid #777853; }
+#playlist li:hover { background:#EBD671; }
+#playlist li.active { background:#78784f; color:#E6C229; font-weight:bold; }
+.player-container { margin-top:15px; }
+audio { display:block; width:90%; margin:10px auto; }
+button { background:#656648; color:#ffffffef; border:none; padding:10px 16px; margin:5px; border-radius:6px; cursor:pointer; }
+button:hover { background:#8c9352; }
 
-    /* Add glowing black shadow */
-    text-shadow:
-        0 0 4px black,
-        0 0 8px black,
-        0 0 12px black,
-        0 0 16px black;
+/* Logo glow and wave */
+#soundio-logo::before {
+    transform: rotate(var(--wave-rotate, 0deg)) scale(var(--wave-scale,1));
+    box-shadow: 0 0 calc(var(--wave-glow,10px)) yellow, 0 0 calc(var(--wave-glow,20px)) yellow;
+}
+#soundio-logo {
+    width: 110px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid yellow;
+    box-shadow: 0 0 10px rgba(230,194,41,0.5);
+    transition: transform 0.05s linear, box-shadow 0.05s linear;
+    position: relative;
+    z-index: 1;
+}
+#soundio-logo::after {
+    content: '';
+    position: absolute;
+    top: -6px; left: -6px; right: -6px; bottom: -6px;
+    border-radius: 50%;
+    border: 3px solid black;
+    transform: scale(var(--wave-scale,1));
+    box-shadow: 0 0 calc(var(--wave-glow,10px)) yellow, 0 0 calc(var(--wave-glow,20px)) rgb(131, 131, 112), 0 0 calc(var(--wave-glow,30px)) yellow;
+    z-index: -1;
+}
+
+@keyframes pulseWave {
+    0% { transform: scale(1); opacity: 0.7; box-shadow: 0 0 10px yellow,0 0 20px yellow,0 0 30px yellow; }
+    50% { transform: scale(1.1); opacity: 0.85; box-shadow: 0 0 20px yellow,0 0 30px yellow,0 0 40px yellow; }
+    100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 30px yellow,0 0 40px yellow,0 0 50px yellow; }
 }
 
 #current-song-container {
-    width: 90%;
-    max-width: 600px;
-    margin: 10px auto;
-    overflow: hidden;
-    white-space: nowrap;
-    background: #E6C229;
-    border-radius: 10px;
-    padding: 10px 15px;
-    text-align: left;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    width:90%; overflow:hidden; white-space:nowrap; margin:10px auto;
+    border-radius:6px; background:#E6C229; padding:8px 12px; text-align:left;
 }
-
 #current-song {
-    font-weight: bold;
-    font-size: 18px;
-    color: #000;
-    display: inline-block;
+    font-weight:bold; font-size:18px; color:#000;
+    white-space:nowrap; display:inline-block;
 }
 
-#playlist {
-    list-style: none;
-    padding: 0;
-    margin: 10px auto;
-    max-height: 240px;
-    overflow-y: auto;
-    width: 90%;
-    max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    background: rgba(255,255,255,0.05);
-}
-
-#playlist li {
-    padding: 12px 10px;
-    cursor: pointer;
-    border-bottom: 1px solid #777853;
-    transition: background 0.3s;
-}
-
-#playlist li:hover { background:#EBD671; }
-#playlist li.active { background:#78784f; color:#E6C229; font-weight:bold; }
-
-.player-container {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-audio {
-    width: 90%;
-    max-width: 600px;
-    margin-bottom: 15px;
-}
-
-button {
-    background:#656648;
-    color:#fff;
-    border:none;
-    padding:10px 16px;
-    margin:5px;
-    border-radius:6px;
-    cursor:pointer;
-    transition: background 0.3s;
-}
-
-button:hover { background:#8c9352; }
-
-footer {
-    text-align:center;
-    padding:15px 10px;
-    font-size:14px;
-    color:#555;
-}
-
+/* scroll animation */
 @keyframes scroll {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+    0%{transform:translateX(100%);}
+    100%{transform:translateX(-100%);}
 }
+
+#logo-container { text-align:center; margin-top:15px; }
+
 </style>
 </head>
+
 <body>
 
 <div id="logo-container">
@@ -176,9 +134,7 @@ footer {
 
 <ul id="playlist">
 {% for song in playlist %}
-<li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">
-🎵 {{ song.replace('.mp3','').replace('_',' ') }}
-</li>
+<li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">{{ song }}</li>
 {% endfor %}
 </ul>
 
@@ -193,17 +149,6 @@ footer {
         <button id="repeat-btn">🔁 Repeat</button>
     </div>
 </div>
-
-<div style="margin-top:20px;">
-    <button onclick="showAbout()" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
-        About
-    </button>
-</div>
-
-<footer>
-    © 2026 Soundio Music App. All rights reserved. <br>
-    Created by Asli.Tech. <a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
-</footer>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -242,26 +187,39 @@ function animateLogo(){
     if(!analyser) return;
     requestAnimationFrame(animateLogo);
     analyser.getByteFrequencyData(dataArray);
-    let avg = dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-    const scale = 0.9 + (avg/255)*0.3;
-    const glow = (avg/255)*20;
-    logo.style.transform = `scale(${scale})`;
-    logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
-    logo.style.setProperty('--wave-scale', 1 + (avg/255)*0.3);
-    logo.style.setProperty('--wave-glow', glow);
-}
+    let sum = 0;
+    dataArray.forEach(v => sum += v);
+    let avg = sum / dataArray.length;
 
-function updateTitle(){
-    const name = items[index].textContent;
-    titleEl.style.animation="none";
-    titleEl.textContent = "🎶 Now Playing: " + name;
-    let container = document.getElementById("current-song-container").offsetWidth;
-    let textW = titleEl.scrollWidth;
-    if(textW>container){
-        let duration = textW/50;
-        titleEl.style.animation=`scroll ${duration}s linear infinite`;
+    if(logo){
+        const scale = 0.9 + (avg / 255) * 0.3;
+        const glow = (avg / 255) * 20;
+        logo.style.transform = `scale(${scale})`;
+        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+        if(logo.style.setProperty){
+            const waveSize = 1 + (avg / 255) * 0.3;
+            logo.style.setProperty('--wave-scale', waveSize);
+            logo.style.setProperty('--wave-glow', glow);
+        }
     }
 }
+
+function updateTitle(name = null){
+    if(!name) name = "🎵 Select a song to play 🎵";
+    titleEl.style.animation = "none";
+    titleEl.textContent = name;
+
+    let container = document.getElementById("current-song-container").offsetWidth;
+    let textW = titleEl.scrollWidth;
+
+    if(textW > container){
+        let duration = textW / 50;
+        titleEl.style.animation = `scroll ${duration}s linear infinite`;
+    }
+}
+
+// initialize default scrolling
+updateTitle();
 
 function loadSong(i){
     initAudio();
@@ -271,7 +229,7 @@ function loadSong(i){
     player.play();
     isPlaying = true;
     playBtn.textContent="⏸";
-    updateTitle();
+    updateTitle("🎶 Now Playing: " + items[i].textContent);
 }
 
 function playPause(){
@@ -283,7 +241,7 @@ function playPause(){
         player.play();
         playBtn.textContent="⏸";
     }
-    isPlaying=!isPlaying;
+    isPlaying = !isPlaying;
 }
 
 function next(){
@@ -308,7 +266,10 @@ function shuffle(){
 }
 
 items.forEach((li,i)=>{
-    li.addEventListener("click",()=>{ index=i; loadSong(index); });
+    li.addEventListener("click",()=>{
+        index=i;
+        loadSong(index);
+    });
 });
 
 playBtn.onclick=playPause;
@@ -317,15 +278,22 @@ nextBtn.onclick=next;
 prevBtn.onclick=prev;
 shuffleBtn.onclick=shuffle;
 repeatBtn.onclick=()=>{repeat=!repeat; alert("Repeat "+(repeat?"ON":"OFF"));};
+
 player.addEventListener("ended", next);
 
 });
-
-// About Button
-function showAbout(){
-    alert("Soundio Music App\n© 2026 Asli.Tech");
-}
 </script>
+
+<div style="margin-top:20px;">
+    <button onclick="showAbout()" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
+        About
+    </button>
+</div>
+
+<footer style="text-align:center; padding:10px; font-size:14px; color:#555;">
+    © 2026 Soundio Music App. All rights reserved. <br>
+    Created by Asli.Tech. <a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
+</footer>
 
 </body>
 </html>
