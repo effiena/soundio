@@ -102,38 +102,6 @@ button:hover { background:#8c9352; }
  transition: transform 0.05s linear, box-shadow 0.05s linear;
 }
 
-.header {
-    display: flex;
-    justify-content: space-between; /* logo left, playlist right */
-    align-items: center;
-    padding: 10px 20px;
-    background: linear-gradient(90deg, #000000, #222200);
-    color: yellow;
-}
-
-.header h1 {
-    margin: 0;
-    font-size: 28px;
-}
-
-#playlist-container {
-    text-align: right;
-}
-
-#playlist {
-    list-style: none;
-    padding: 5px 0 0 0;
-    margin: 0;
-}
-
-#playlist li {
-    cursor: pointer;
-    padding: 2px 0;
-}
-
-#playlist li:hover {
-    text-decoration: underline;
-}
 </style>
 </head>
 
@@ -143,16 +111,7 @@ button:hover { background:#8c9352; }
 <img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo">
 </div>
 
-<header class="header">
-    <!-- Logo on the left -->
-    <h1>🎶 SOUNDIO 🎶</h1>
-
-    <!-- Playlist on the right -->
-    <div id="playlist-container">
-        <h4>My Playlist</h4>
-        <ul id="playlist"></ul>
-    </div>
-</header>
+<h1>🎶 SOUNDIO 🎶</h1>
 
 <div id="current-song-container">
 <span id="current-song">🎵 Select a song to play 🎵</span>
