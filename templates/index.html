@@ -71,6 +71,17 @@ h1 { font-size:36px; font-weight:700; margin:15px 0; background:linear-gradient(
 
     transition: all 0.3s ease;
 }
+    
+@keyframes scroll-text {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+#current-song.scrolling {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll-text linear infinite;
+}
 #playlist { list-style:none; padding:0; margin:10px auto; max-height:240px; overflow-y:auto; width:90%; max-width:600px; border-radius:8px; box-shadow:0 3px 8px rgba(0,0,0,0.15); background:rgba(255,255,255,0.05);}
 #playlist li { padding:12px 10px; cursor:pointer; border-bottom:1px solid #eaa0a0; transition:background 0.3s;}
 #playlist li:hover { background:#e187cb; } 
