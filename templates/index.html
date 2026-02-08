@@ -150,18 +150,28 @@ document.addEventListener("DOMContentLoaded", () => {
         index = 0;
     }
 
-    function animateLogo() {
-        if(!analyser) return;
-        requestAnimationFrame(animateLogo);
-        analyser.getByteFrequencyData(dataArray);
-        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
-        const scale = 0.9 + (avg / 255) * 0.3;
-        const glow = (avg / 255) * 20;
-        logo.style.transform = `scale(${scale})`;
-        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
-        logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
-        logo.style.setProperty('--wave-glow', glow);
-    }
+function animateLogo() {
+    if(!analyser) return;
+    requestAnimationFrame(animateLogo);
+
+    analyser.getByteFrequencyData(dataArray);
+    let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
+
+    // Logo animation
+    const scale = 0.9 + (avg / 255) * 0.3;
+    const glow = (avg / 255) * 20;
+    logo.style.transform = `scale(${scale})`;
+    logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+    logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
+    logo.style.setProperty('--wave-glow', glow);
+
+    // Now Playing text animation
+    const textScale = 1 + (avg / 255) * 0.1;  // smaller pulse
+    const textGlow = (avg / 255) * 10;
+    titleEl.style.transform = `scale(${textScale})`;
+    titleEl.style.textShadow = `0 0 ${textGlow}px rgba(255,255,255,0.8),
+                                0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
+}
 
 
     function loadSongByUrl(url, name){
