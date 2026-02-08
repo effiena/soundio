@@ -184,17 +184,7 @@ if ('mediaSession' in navigator) {
         ]
     });
 
-    navigator.mediaSession.setActionHandler('play', () => { player.play(); });
-    navigator.mediaSession.setActionHandler('pause', () => { player.pause(); });
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-        index = (index-1 + playlistItems.length) % playlistItems.length;
-        loadSong(index);
-    });
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-        index = (index+1) % playlistItems.length;
-        loadSong(index);
-    });
-}
+
     // Render playlist based on genre filter
     function renderPlaylist() {
         playlistEl.innerHTML = "";
