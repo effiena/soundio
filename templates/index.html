@@ -87,6 +87,23 @@ h1 {
     transition: all 0.3s ease;
 }
 
+#current-song-container::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    pointer-events: none;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    animation: rippleMove 8s linear infinite;
+}
+
+@keyframes rippleMove {
+    0% { transform: translate(0,0) rotate(0deg); }
+    50% { transform: translate(10px, 10px) rotate(45deg); }
+    100% { transform: translate(0,0) rotate(0deg); }
+}
+
 #current-song {
     font-weight: bold;
     font-size: 18px;
