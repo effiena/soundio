@@ -81,7 +81,7 @@ button:hover { background:#c16fa1; }
 {% for song in playlist %}
     {# Data-src uses raw filename; JS will encode URI #}
 <li data-src="/static/music/{{ song }}">
-    🎵 {{ song.rsplit('.', 1)[0].replace('_', ' ') }}
+     {{ song.rsplit('.', 1)[0].replace('_', ' ') }}
 </li>
 {% endfor %}
 </ul>
@@ -179,7 +179,7 @@ function loadSongByUrl(url, name){
         playlist.forEach(song => {
             if(selected === "all" || song.genre === selected){
                 const li = document.createElement("li");
-                li.textContent = song.name.replace(/_/g,' ');
+                li.textContent = "🎵" + song.name.replace(/_/g,' ');
                 li.dataset.url = song.url;
                 li.dataset.genre = song.genre;
                 li.addEventListener("click", ()=> loadSongByUrl(song.url, song.name.replace(/_/g,' ')));
