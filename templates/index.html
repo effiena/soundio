@@ -174,7 +174,27 @@ document.addEventListener("DOMContentLoaded", () => {
         titleEl.textContent = "🎶 Now Playing: " + name;
         index = items.findIndex(li=>li.dataset.url===url);
     }
+if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: playlistItems[index].textContent.trim(),
+        artist: 'Soundio',
+        album: '',
+        artwork: [
+            { src: '/static/soundiologo.png', sizes: '96x96', type: 'image/png' }
+        ]
+    });
 
+    navigator.mediaSession.setActionHandler('play', () => { player.play(); });
+    navigator.mediaSession.setActionHandler('pause', () => { player.pause(); });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+        index = (index-1 + playlistItems.length) % playlistItems.length;
+        loadSong(index);
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+        index = (index+1) % playlistItems.length;
+        loadSong(index);
+    });
+}
     // Render playlist based on genre filter
     function renderPlaylist() {
         playlistEl.innerHTML = "";
