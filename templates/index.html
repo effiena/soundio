@@ -219,8 +219,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const genreFilter = document.getElementById("genre-filter");
     const playlistEl = document.getElementById("playlist");
 
-    let playlist = [];
-    let items = [];
+    let playlist = []; // full playlist from backend
+    let items = [];    // currently visible songs after filtering
     let index = 0;
     let isPlaying = false;
     let repeat = false;
@@ -268,28 +268,42 @@ document.addEventListener("DOMContentLoaded", () => {
         const selected = genreFilter.value.toLowerCase();
         items = [];
 
-        playlist.forEach((song, i) => {
+        playlist.forEach(song => {
             if(selected === "all" || song.genre.toLowerCase() === selected){
                 const li = document.createElement("li");
                 li.textContent = song.name.replace(/_/g,' ');
                 li.dataset.url = song.url;
                 li.dataset.genre = song.genre;
-                li.addEventListener("click", ()=>{ index = i; loadSong(i); });
+                li.addEventListener("click", ()=>{
+                    loadSongByUrl(song.url, song.name.replace(/_/g,' '));
+                });
                 playlistEl.appendChild(li);
                 items.push(li);
             }
         });
+
+        // reset index after filter
+        index = 0;
     }
 
-    function loadSong(i){
-        if(!items[i]) return;
+    function loadSongByUrl(url, name){
+        if(!url) return;
         initAudio();
+
+        // remove active class
         items.forEach(li => li.classList.remove("active"));
-        items[i].classList.add("active");
-        player.src = encodeURI(items[i].dataset.url);
+
+        // mark clicked item as active
+        const li = items.find(li => li.dataset.url === url);
+        if(li) li.classList.add("active");
+
+        player.src = encodeURI(url);
         player.play();
         isPlaying = true;
-        updateTitle(items[i].textContent);
+        updateTitle(name);
+
+        // set index in current filtered items
+        index = items.findIndex(li => li.dataset.url === url);
     }
 
     // Buttons
@@ -301,34 +315,60 @@ document.addEventListener("DOMContentLoaded", () => {
     const repeatBtn = document.getElementById("repeat-btn");
 
     playBtn.onclick = ()=>{
-        if(!player.src){ loadSong(index); return; }
+        if(!player.src){ 
+            if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); 
+            return; 
+        }
         if(isPlaying){ player.pause(); playBtn.textContent="▶️"; }
         else { player.play(); playBtn.textContent="⏸"; }
         isPlaying = !isPlaying;
     };
 
-    stopBtn.onclick = ()=>{ player.pause(); player.currentTime=0; isPlaying=false; playBtn.textContent="▶️"; };
-    nextBtn.onclick = ()=>{ index = repeat ? index : (index+1)%items.length; loadSong(index); };
-    prevBtn.onclick = ()=>{ index = (index-1+items.length)%items.length; loadSong(index); };
+    stopBtn.onclick = ()=>{ 
+        player.pause(); 
+        player.currentTime=0; 
+        isPlaying=false; 
+        playBtn.textContent="▶️"; 
+    };
+
+    nextBtn.onclick = ()=>{ 
+        index = repeat ? index : (index+1)%items.length; 
+        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    };
+
+    prevBtn.onclick = ()=>{ 
+        index = (index-1+items.length)%items.length; 
+        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    };
+
     shuffleBtn.onclick = ()=>{
         for(let i=items.length-1;i>0;i--){
             let j = Math.floor(Math.random()*(i+1));
             [playlist[i],playlist[j]] = [playlist[j],playlist[i]];
         }
         renderPlaylist();
-        index=0;
-        loadSong(index);
+        if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent);
     };
-    repeatBtn.onclick = ()=>{ repeat = !repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
-    player.addEventListener("ended", ()=>{ index = repeat ? index : (index+1)%items.length; loadSong(index); });
 
-    genreFilter.addEventListener("change", ()=>{ renderPlaylist(); index=0; });
+    repeatBtn.onclick = ()=>{ 
+        repeat = !repeat; 
+        alert("Repeat "+(repeat?"ON":"OFF")); 
+    };
+
+    player.addEventListener("ended", ()=>{
+        index = repeat ? index : (index+1)%items.length; 
+        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    });
+
+    genreFilter.addEventListener("change", ()=>{ renderPlaylist(); });
 
     // Fetch songs from backend
-    fetch("/songs").then(r=>r.json()).then(data=>{
-        playlist = data;
-        renderPlaylist();
-    });
+    fetch("/songs")
+        .then(r=>r.json())
+        .then(data=>{
+            playlist = data;
+            renderPlaylist();
+        });
 });
 </script>
 <!--
