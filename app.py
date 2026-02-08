@@ -51,7 +51,7 @@ def license_file():
 
 # -------- AUTO LANGUAGE DETECTION --------
 malay_keywords = [
-    "siti","sharifah","s.jibeng","s. jibeng","a.ramlee","cek","yang","hati","search","exists","ukays","spring","angan", "sepi","flybaits","yale","kazar","impian","sinaran","hajat","haida","ini","malam","kita","minyak","nasi","rasa","rintihan",
+    "siti","sharifah","s.jibeng","s. jibeng","muda","janda","a.ramlee","cek","yang","hati","search","exists","ukays","spring","angan", "sepi","flybaits","yale","kazar","impian","sinaran","hajat","haida","ini","malam","kita","minyak","nasi","rasa","rintihan",
     "lagu","ramlah","melayu","jamal","amy","cinta","sayang", "sendiri","kau","hampa","aishah","janji","aku","ku","ziana","dan","di","dag","intan","kasih","kasihku","kasihmu","ella"
 ]
 
