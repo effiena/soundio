@@ -197,6 +197,20 @@ button:hover { background:#c16fa1; }
     </div>
 </div>
 
+<!-- Dropdown for filtering -->
+<div style="margin:15px 0;">
+    <label for="genre-filter">Genre: </label>
+    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
+        <option value="all">All</option>
+        <option value="Malay">Malay</option>
+        <option value="English">English</option>
+        <option value="Mandarin">Mandarin</option>
+        <option value="Korean">Korean</option>
+    </select>
+</div>
+
+<ul id="playlist"></ul>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
@@ -205,11 +219,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const genreFilter = document.getElementById("genre-filter");
     const playlistEl = document.getElementById("playlist");
 
-    let playlist = []; // full playlist from backend
+    let playlist = [];
+    let items = [];
     let index = 0;
     let isPlaying = false;
     let repeat = false;
-    let items = []; // dynamic li elements
 
     let audioCtx, analyser, source, dataArray;
 
@@ -229,13 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if(!analyser) return;
         requestAnimationFrame(animateLogo);
         analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        dataArray.forEach(v => sum += v);
-        let avg = sum / dataArray.length;
-
+        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
         const scale = 0.9 + (avg / 255) * 0.3;
         const glow = (avg / 255) * 20;
-
         logo.style.transform = `scale(${scale})`;
         logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
         logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
@@ -255,16 +265,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderPlaylist() {
         playlistEl.innerHTML = "";
-        const selected = genreFilter.value;
+        const selected = genreFilter.value.toLowerCase();
         items = [];
 
         playlist.forEach((song, i) => {
-            if(selected === "all" || song.genre === selected){
+            if(selected === "all" || song.genre.toLowerCase() === selected){
                 const li = document.createElement("li");
-                li.textContent = song.name.replace(/_/g," ");
+                li.textContent = song.name.replace(/_/g,' ');
                 li.dataset.url = song.url;
                 li.dataset.genre = song.genre;
-                li.addEventListener("click", () => { index = i; loadSong(i); });
+                li.addEventListener("click", ()=>{ index = i; loadSong(i); });
                 playlistEl.appendChild(li);
                 items.push(li);
             }
@@ -282,31 +292,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateTitle(items[i].textContent);
     }
 
-    function playPause(){
-        if(!player.src){ loadSong(index); return; }
-        if(isPlaying){
-            player.pause();
-            playBtn.textContent="▶️";
-        } else {
-            player.play();
-            playBtn.textContent="⏸";
-        }
-        isPlaying = !isPlaying;
-    }
-
-    function next(){ index = repeat ? index : (index + 1) % items.length; loadSong(index); }
-    function prev(){ index = (index - 1 + items.length) % items.length; loadSong(index); }
-
-    function shuffle(){
-        for(let i = items.length-1; i>0; i--){
-            let j = Math.floor(Math.random()*(i+1));
-            [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
-        }
-        index = 0;
-        renderPlaylist();
-        loadSong(index);
-    }
-
     // Buttons
     const playBtn = document.getElementById("play-pause-btn");
     const stopBtn = document.getElementById("stop-btn");
@@ -315,23 +300,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const shuffleBtn = document.getElementById("shuffle-btn");
     const repeatBtn = document.getElementById("repeat-btn");
 
-    playBtn.onclick = playPause;
+    playBtn.onclick = ()=>{
+        if(!player.src){ loadSong(index); return; }
+        if(isPlaying){ player.pause(); playBtn.textContent="▶️"; }
+        else { player.play(); playBtn.textContent="⏸"; }
+        isPlaying = !isPlaying;
+    };
+
     stopBtn.onclick = ()=>{ player.pause(); player.currentTime=0; isPlaying=false; playBtn.textContent="▶️"; };
-    nextBtn.onclick = next;
-    prevBtn.onclick = prev;
-    shuffleBtn.onclick = shuffle;
+    nextBtn.onclick = ()=>{ index = repeat ? index : (index+1)%items.length; loadSong(index); };
+    prevBtn.onclick = ()=>{ index = (index-1+items.length)%items.length; loadSong(index); };
+    shuffleBtn.onclick = ()=>{
+        for(let i=items.length-1;i>0;i--){
+            let j = Math.floor(Math.random()*(i+1));
+            [playlist[i],playlist[j]] = [playlist[j],playlist[i]];
+        }
+        renderPlaylist();
+        index=0;
+        loadSong(index);
+    };
     repeatBtn.onclick = ()=>{ repeat = !repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
-    player.addEventListener("ended", next);
+    player.addEventListener("ended", ()=>{ index = repeat ? index : (index+1)%items.length; loadSong(index); });
 
-    genreFilter.addEventListener("change", () => { renderPlaylist(); index = 0; });
+    genreFilter.addEventListener("change", ()=>{ renderPlaylist(); index=0; });
 
-    // Fetch songs from backend with AI sorting
-    fetch("/songs")
-        .then(r => r.json())
-        .then(data => {
-            playlist = data;
-            renderPlaylist();
-        });
+    // Fetch songs from backend
+    fetch("/songs").then(r=>r.json()).then(data=>{
+        playlist = data;
+        renderPlaylist();
+    });
 });
 </script>
 <!--
