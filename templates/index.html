@@ -267,23 +267,60 @@ document.addEventListener("DOMContentLoaded", () => {
     let repeat = false;
     let isPlaying = false;
 
-    function loadSong(i){
-        if(!playlistItems[i]) return;
+function initAudio() {
+    if(audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    source = audioCtx.createMediaElementSource(player);
+    analyser = audioCtx.createAnalyser();
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 256;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    animateVisuals();
+}
 
-        playlistItems.forEach(li=>li.classList.remove("active"));
-        playlistItems[i].classList.add("active");
+function animateVisuals() {
+    if(!analyser) return;
+    requestAnimationFrame(animateVisuals);
 
-        const src = playlistItems[i].dataset.src;
-        const name = playlistItems[i].textContent;
+    analyser.getByteFrequencyData(dataArray);
+    let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
 
-        player.src = encodeURI(src);
-        player.play();
+    // Logo pulsing
+    const logoScale = 0.9 + (avg / 255) * 0.3;
+    const logoGlow = (avg / 255) * 15;
+    logo.style.transform = `scale(${logoScale})`;
+    logo.style.boxShadow = `0 0 ${logoGlow}px rgba(230,194,41,0.8)`;
+    logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
+    logo.style.setProperty('--wave-glow', logoGlow);
 
-        titleEl.textContent = "🎶 Now Playing: " + name;
-        index = i;
-        isPlaying = true;
-    }
-        function renderPlaylist() {
+    // Now Playing text pulsing
+    const textScale = 1 + (avg / 255) * 0.08; // smaller pulse for text
+    const textGlow = (avg / 255) * 8;
+    titleEl.style.transform = `scale(${textScale})`;
+    titleEl.style.textShadow = `0 0 ${textGlow}px rgba(255,255,255,0.8),
+                                0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
+}
+
+// Make sure you call initAudio() inside your loadSong function
+function loadSongByUrl(url, name){
+    if(!url) return;
+    initAudio(); // initialize audio and animations
+
+    // Highlight current song
+    items.forEach(li=>li.classList.remove("active"));
+    const li = items.find(li=>li.dataset.url===url);
+    if(li) li.classList.add("active");
+
+    player.src = encodeURI(url);
+    player.play();
+    isPlaying = true;
+    titleEl.textContent = "🎶 Now Playing: " + name;
+    index = items.findIndex(li=>li.dataset.url===url);
+}
+
+
+    function renderPlaylist() {
         playlistEl.innerHTML = "";
         const selected = genreFilter.value;
         items = [];
@@ -302,60 +339,27 @@ document.addEventListener("DOMContentLoaded", () => {
         index = 0;
     }
 
-    playlistItems.forEach((li,i)=>{
-        li.addEventListener("click", ()=> loadSong(i));
-    });
 
-    playBtn.onclick = ()=>{
-        if(!player.src){
-            loadSong(0);
-            return;
-        }
-        if(isPlaying){
-            player.pause();
-            playBtn.textContent="▶️";
-        }else{
-            player.play();
-            playBtn.textContent="⏸";
-        }
+
+    // Buttons
+    document.getElementById("play-pause-btn").onclick = ()=> {
+        if(!player.src){ if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); return; }
+        if(isPlaying){ player.pause(); this.textContent="▶️"; } 
+        else{ player.play(); this.textContent="⏸"; }
         isPlaying = !isPlaying;
     };
-
-    stopBtn.onclick = ()=>{
-        player.pause();
-        player.currentTime=0;
-        isPlaying=false;
-        playBtn.textContent="▶️";
+    document.getElementById("stop-btn").onclick = ()=> { player.pause(); player.currentTime=0; isPlaying=false; };
+    document.getElementById("next-btn").onclick = ()=> { index = repeat?index:(index+1)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
+    document.getElementById("prev-btn").onclick = ()=> { index = (index-1+items.length)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
+    document.getElementById("shuffle-btn").onclick = ()=>{
+        items.sort(()=>Math.random()-0.5);
+        renderPlaylist();
+        if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent);
     };
+    document.getElementById("repeat-btn").onclick = ()=>{ repeat=!repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
+    player.addEventListener("ended", ()=> { index = repeat?index:(index+1)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); });
 
-    nextBtn.onclick = ()=>{
-        index = (index+1)%playlistItems.length;
-        loadSong(index);
-    };
-
-    prevBtn.onclick = ()=>{
-        index = (index-1+playlistItems.length)%playlistItems.length;
-        loadSong(index);
-    };
-
-    shuffleBtn.onclick = ()=>{
-        index = Math.floor(Math.random()*playlistItems.length);
-        loadSong(index);
-    };
-
-    repeatBtn.onclick = ()=>{
-        repeat = !repeat;
-        alert("Repeat "+(repeat?"ON":"OFF"));
-    };
-
-    player.addEventListener("ended", ()=>{
-        if(repeat){
-            loadSong(index);
-        }else{
-            index = (index+1)%playlistItems.length;
-            loadSong(index);
-        }
- genreFilter.addEventListener("change", renderPlaylist);
+    genreFilter.addEventListener("change", renderPlaylist);
 
     // Fetch playlist from backend
     fetch("/songs")
