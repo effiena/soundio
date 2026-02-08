@@ -21,10 +21,24 @@ html, body {
     margin: 0;
     padding: 0;
     font-family: Montserrat, sans-serif;
-    background: #c07ea0;
     text-align: center;
-}
 
+    /* Background image from uploaded file */
+    background: url('/static/picture/92aca0b2-39f6-4e5f-9d8e-68229207cb9c.png') no-repeat center center fixed;
+    background-size: cover;
+    position: relative;
+    min-height: 100vh;
+}
+    
+body::before {
+    content: '';
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.1); /* adjust darkness */
+    pointer-events: none;
+    z-index: 0;
+}
+    
 #logo-container {
     margin-top: 20px;
     display: flex;
