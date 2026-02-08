@@ -48,10 +48,47 @@ def manifest():
 def license_file():
     return send_from_directory('.', 'license.txt')
 
+# -------- AUTO LANGUAGE DETECTION --------
+malay_keywords = [
+    "siti","search","exists","ukays","spring",
+    "lagu","melayu","jamal","amy","ella"
+]
+
+def detect_language(filename):
+    # detect chinese characters
+    for c in filename:
+        if '\u4e00' <= c <= '\u9fff':
+            return "chinese"
+
+    name = filename.lower()
+
+    for k in malay_keywords:
+        if k in name:
+            return "malay"
+
+    return "english"
+
+
 @app.route("/songs")
 def songs():
-    playlist = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
-    return jsonify({"playlist": playlist})
+    files = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
+
+    data = {
+        "malay": [],
+        "chinese": [],
+        "english": []
+    }
+
+    for f in files:
+        lang = detect_language(f)
+        encoded = quote(f)
+        path = f"/music/{encoded}"
+        data[lang].append({
+            "name": f,
+            "url": path
+        })
+
+    return jsonify(data)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
