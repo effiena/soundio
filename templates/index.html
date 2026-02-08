@@ -23,6 +23,23 @@ html, body {
     font-family: Montserrat, sans-serif;
     background: #c07ea0;
     text-align: center;
+    background: radial-gradient(circle at 20% 20%, #ff9ed6 0%, transparent 25%),
+                radial-gradient(circle at 80% 30%, #f6a6ff 0%, transparent 25%),
+                radial-gradient(circle at 30% 70%, #ffd6f3 0%, transparent 25%),
+                radial-gradient(circle at 70% 80%, #ff7acb 0%, transparent 25%),
+                linear-gradient(180deg,#2a0f3a,#7b3fa8,#ff7acb);
+    background-attachment: fixed;
+}
+    body::before {
+    content: '';
+    position: fixed;
+    inset:0;
+    background:
+        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.25) 0, transparent 40%),
+        radial-gradient(circle at 80% 10%, rgba(255,255,255,0.2) 0, transparent 40%),
+        radial-gradient(circle at 50% 90%, rgba(255,255,255,0.15) 0, transparent 40%);
+    backdrop-filter: blur(40px);
+    pointer-events:none;
 }
 
 #logo-container {
