@@ -130,6 +130,12 @@ function initAudio() {
     animateVisuals();
 }
 
+// Add this to resume audio on mobile
+function resumeAudioContext() {
+    if(audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
 function animateVisuals() {
     if(!analyser) return;
     requestAnimationFrame(animateVisuals);
@@ -153,12 +159,25 @@ function animateVisuals() {
                                 0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
 }
 
-// Make sure you call initAudio() inside your loadSong function
+
+    resumeAudioContext(); // <-- resume audio context
+
+    if(isPlaying){ 
+        player.pause(); 
+        this.textContent="▶️"; 
+    } else { 
+        player.play(); 
+        this.textContent="⏸"; 
+    }
+    isPlaying = !isPlaying;
+};
+
 function loadSongByUrl(url, name){
     if(!url) return;
-    initAudio(); // initialize audio and animations
 
-    // Highlight current song
+    resumeAudioContext(); // <-- resume audio context
+    initAudio(); // initialize audio & visualizer
+
     items.forEach(li=>li.classList.remove("active"));
     const li = items.find(li=>li.dataset.url===url);
     if(li) li.classList.add("active");
@@ -214,12 +233,12 @@ if ('mediaSession' in navigator) {
 
 
     // Buttons
-    document.getElementById("play-pause-btn").onclick = ()=> {
-        if(!player.src){ if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); return; }
-        if(isPlaying){ player.pause(); this.textContent="▶️"; } 
-        else{ player.play(); this.textContent="⏸"; }
-        isPlaying = !isPlaying;
-    };
+document.getElementById("play-pause-btn").onclick = () => {
+    if(!player.src){ 
+        if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); 
+        return; 
+    }
+
     document.getElementById("stop-btn").onclick = ()=> { player.pause(); player.currentTime=0; isPlaying=false; };
     document.getElementById("next-btn").onclick = ()=> { index = repeat?index:(index+1)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
     document.getElementById("prev-btn").onclick = ()=> { index = (index-1+items.length)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
