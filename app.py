@@ -48,26 +48,6 @@ def manifest():
 def license_file():
     return send_from_directory('.', 'license.txt')
 
-# -------- AUTO LANGUAGE DETECTION --------
-malay_keywords = [
-    "siti","search","exists","ukays","spring",
-    "lagu","melayu","jamal","amy","ella"
-]
-
-def detect_language(filename):
-    # detect chinese characters
-    for c in filename:
-        if '\u4e00' <= c <= '\u9fff':
-            return "chinese"
-
-    name = filename.lower()
-
-    for k in malay_keywords:
-        if k in name:
-            return "malay"
-
-    return "english"
-
 
 # -------- AUTO LANGUAGE DETECTION --------
 malay_keywords = [
