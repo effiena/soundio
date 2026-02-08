@@ -199,21 +199,16 @@ button:hover { background:#c16fa1; }
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
-    const items = Array.from(document.querySelectorAll("#playlist li"));
-    const playBtn = document.getElementById("play-pause-btn");
-    const stopBtn = document.getElementById("stop-btn");
-    const nextBtn = document.getElementById("next-btn");
-    const prevBtn = document.getElementById("prev-btn");
-    const shuffleBtn = document.getElementById("shuffle-btn");
-    const repeatBtn = document.getElementById("repeat-btn");
     const titleEl = document.getElementById("current-song");
     const logo = document.getElementById("soundio-logo");
     const genreFilter = document.getElementById("genre-filter");
-    
-    let playlist = items.map(li => li.dataset.src);
+    const playlistEl = document.getElementById("playlist");
+
+    let playlist = []; // full playlist from backend
     let index = 0;
     let isPlaying = false;
     let repeat = false;
+    let items = []; // dynamic li elements
 
     let audioCtx, analyser, source, dataArray;
 
@@ -246,8 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
         logo.style.setProperty('--wave-glow', glow);
     }
 
-    function updateTitle() {
-        const name = items[index].textContent;
+    function updateTitle(name){
         titleEl.style.animation = "none";
         titleEl.textContent = "🎶 Now Playing: " + name;
         let container = document.getElementById("current-song-container").offsetWidth;
@@ -258,18 +252,35 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-function loadSong(i){
-    initAudio();
-    items.forEach(li=>li.classList.remove("active"));
-    items[i].classList.add("active");
-    
-    // encode URI to handle Chinese characters
-    player.src = encodeURI(playlist[i]);
-    player.play();
-    isPlaying = true;
-    playBtn.textContent = "⏸";
-    updateTitle();
-}
+    function renderPlaylist() {
+        playlistEl.innerHTML = "";
+        const selected = genreFilter.value;
+        items = [];
+
+        playlist.forEach((song, i) => {
+            if(selected === "all" || song.genre === selected){
+                const li = document.createElement("li");
+                li.textContent = song.name.replace(/_/g," ");
+                li.dataset.url = song.url;
+                li.dataset.genre = song.genre;
+                li.addEventListener("click", () => { index = i; loadSong(i); });
+                playlistEl.appendChild(li);
+                items.push(li);
+            }
+        });
+    }
+
+    function loadSong(i){
+        if(!items[i]) return;
+        initAudio();
+        items.forEach(li => li.classList.remove("active"));
+        items[i].classList.add("active");
+        player.src = encodeURI(items[i].dataset.url);
+        player.play();
+        isPlaying = true;
+        updateTitle(items[i].textContent);
+    }
+
     function playPause(){
         if(!player.src){ loadSong(index); return; }
         if(isPlaying){
@@ -282,20 +293,27 @@ function loadSong(i){
         isPlaying = !isPlaying;
     }
 
-    function next(){ index = repeat ? index : (index + 1) % playlist.length; loadSong(index); }
-    function prev(){ index = (index - 1 + playlist.length) % playlist.length; loadSong(index); }
+    function next(){ index = repeat ? index : (index + 1) % items.length; loadSong(index); }
+    function prev(){ index = (index - 1 + items.length) % items.length; loadSong(index); }
+
     function shuffle(){
-        for(let i = playlist.length-1; i > 0; i--){
-            let j = Math.floor(Math.random() * (i+1));
+        for(let i = items.length-1; i>0; i--){
+            let j = Math.floor(Math.random()*(i+1));
             [playlist[i], playlist[j]] = [playlist[j], playlist[i]];
-            [items[i].dataset.src, items[j].dataset.src] = [items[j].dataset.src, items[i].dataset.src];
-            [items[i].textContent, items[j].textContent] = [items[j].textContent, items[i].textContent];
         }
         index = 0;
+        renderPlaylist();
         loadSong(index);
     }
 
-    items.forEach((li,i)=>{ li.addEventListener("click", ()=>{ index=i; loadSong(index); }); });
+    // Buttons
+    const playBtn = document.getElementById("play-pause-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const shuffleBtn = document.getElementById("shuffle-btn");
+    const repeatBtn = document.getElementById("repeat-btn");
+
     playBtn.onclick = playPause;
     stopBtn.onclick = ()=>{ player.pause(); player.currentTime=0; isPlaying=false; playBtn.textContent="▶️"; };
     nextBtn.onclick = next;
@@ -304,12 +322,15 @@ function loadSong(i){
     repeatBtn.onclick = ()=>{ repeat = !repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
     player.addEventListener("ended", next);
 
-    genreFilter.addEventListener("change", () => {
-        const selected = genreFilter.value;
-        items.forEach(li => { li.style.display = (selected === "all" || li.dataset.genre === selected) ? "block" : "none"; });
-        const firstVisible = items.findIndex(li => li.style.display !== "none");
-        if(firstVisible !== -1) index = firstVisible;
-    });
+    genreFilter.addEventListener("change", () => { renderPlaylist(); index = 0; });
+
+    // Fetch songs from backend with AI sorting
+    fetch("/songs")
+        .then(r => r.json())
+        .then(data => {
+            playlist = data;
+            renderPlaylist();
+        });
 });
 </script>
 <!--
