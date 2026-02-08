@@ -51,8 +51,8 @@ def license_file():
 
 # -------- AUTO LANGUAGE DETECTION --------
 malay_keywords = [
-    "siti","search","exists","ukays","spring","angan", "sepi",
-    "lagu","melayu","jamal","amy","cinta","sayang", "sendiri","kau","hampa","aishah","janji","aku","ku","ziana","dan","di","dag","intan","kasih","kasihku","kasihmu","ella"
+    "siti","sharifah","search","exists","ukays","spring","angan", "sepi","flybaits","yale","kazar","impian","sinaran","hajat","haida","ini","malam","kita","minyak","nasi","rasa","rintihan",
+    "lagu","ramlah","melayu","jamal","amy","cinta","sayang", "sendiri","kau","hampa","aishah","janji","aku","ku","ziana","dan","di","dag","intan","kasih","kasihku","kasihmu","ella"
 ]
 
 def detect_language(filename):
