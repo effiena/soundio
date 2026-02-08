@@ -218,11 +218,10 @@ button:hover { background:#c16fa1; }
 </ul>
 -->
 
-    <ul id="playlist">
+<ul id="playlist">
 {% for song in playlist %}
-    {# Data-src uses raw filename; JS will encode URI #}
-        <li data-src="/static/music/{{ song }}">
-        🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}
+    <li data-src="{{ url_for('music', filename=song) }}" data-genre="{{ detect_language(song) }}">
+        🎵 {{ song.rsplit('.',1)[0].replace('_',' ') }}
     </li>
 {% endfor %}
 </ul>
@@ -253,47 +252,25 @@ button:hover { background:#c16fa1; }
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
     const player = document.getElementById("player");
-    const titleEl = document.getElementById("current-song");;
+    const titleEl = document.getElementById("current-song");
+    const playlistEl = document.getElementById("playlist");
+    const genreFilter = document.getElementById("genre-filter");
     const playBtn = document.getElementById("play-pause-btn");
     const stopBtn = document.getElementById("stop-btn");
     const nextBtn = document.getElementById("next-btn");
     const prevBtn = document.getElementById("prev-btn");
     const shuffleBtn = document.getElementById("shuffle-btn");
     const repeatBtn = document.getElementById("repeat-btn");
-    const playlistEl = document.getElementById("playlist");
-    const genreFilter = document.getElementById("genre-filter");
     const logo = document.getElementById("soundio-logo");
 
-    let playlist = []; // full playlist from backend
-    let items = [];    // visible songs after filter
+    let items = Array.from(playlistEl.querySelectorAll("li"));
     let index = 0;
     let isPlaying = false;
     let repeat = false;
     let audioCtx, analyser, source, dataArray;
 
-    function updateTitle(name){
-        titleEl.textContent = "🎶 Now Playing: " + name;
-    }
-
-    function loadSong(i){
-        if(!playlistItems[i]) return;
-
-        playlistItems.forEach(li=>li.classList.remove("active"));
-        playlistItems[i].classList.add("active");
-
-        const src = playlistItems[i].dataset.src;
-        const name = playlistItems[i].textContent;
-
-        player.src = encodeURI(src);
-        player.play();
-
-        titleEl.textContent = "🎶 Now Playing: " + name;
-        index = i;
-        isPlaying = true;
-    }
-
+    // ----------- Audio Visuals -----------
     function initAudio() {
         if(audioCtx) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -313,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
         analyser.getByteFrequencyData(dataArray);
         let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
 
-        // Logo pulsing
         const logoScale = 0.9 + (avg / 255) * 0.3;
         const logoGlow = (avg / 255) * 15;
         logo.style.transform = `scale(${logoScale})`;
@@ -321,7 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
         logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
         logo.style.setProperty('--wave-glow', logoGlow);
 
-        // Now Playing text pulsing
         const textScale = 1 + (avg / 255) * 0.08;
         const textGlow = (avg / 255) * 8;
         titleEl.style.transform = `scale(${textScale})`;
@@ -329,102 +304,65 @@ document.addEventListener("DOMContentLoaded", () => {
                                     0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
     }
 
-    // ===================
-    // Event listeners
-    // ===================
-    playlistItems.forEach((li,i)=>{
-        li.addEventListener("click", ()=> loadSong(i));
-    });
+    // ----------- Load Song -----------
+    function loadSong(i) {
+        if(!items[i]) return;
 
-    playBtn.onclick = ()=>{
-        if(!player.src){
-            loadSong(0);
-            return;
-        }
-        if(isPlaying){
-            player.pause();
-            playBtn.textContent="▶️";
-        }else{
-            player.play();
-            playBtn.textContent="⏸";
-        }
+        items.forEach(li => li.classList.remove("active"));
+        items[i].classList.add("active");
+
+        player.src = encodeURI(items[i].dataset.src);
+        player.play();
+        isPlaying = true;
+        index = i;
+        titleEl.textContent = "🎶 Now Playing: " + items[i].textContent;
+
+        initAudio(); // ensures visuals and screen-lock audio work
+    }
+
+    // ----------- Controls -----------
+    playBtn.onclick = () => {
+        if(!player.src){ loadSong(0); return; }
+        if(isPlaying){ player.pause(); playBtn.textContent="▶️"; }
+        else { player.play(); playBtn.textContent="⏸"; }
         isPlaying = !isPlaying;
     };
 
-    stopBtn.onclick = ()=>{
+    stopBtn.onclick = () => {
         player.pause();
-        player.currentTime=0;
-        isPlaying=false;
+        player.currentTime = 0;
         playBtn.textContent="▶️";
+        isPlaying = false;
     };
 
-    nextBtn.onclick = ()=>{
-        index = (index+1)%playlistItems.length;
-        loadSong(index);
-    };
+    nextBtn.onclick = () => { index = (index+1)%items.length; loadSong(index); };
+    prevBtn.onclick = () => { index = (index-1+items.length)%items.length; loadSong(index); };
+    shuffleBtn.onclick = () => { index = Math.floor(Math.random()*items.length); loadSong(index); };
+    repeatBtn.onclick = () => { repeat = !repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
 
-    prevBtn.onclick = ()=>{
-        index = (index-1+playlistItems.length)%playlistItems.length;
-        loadSong(index);
-    };
+    player.addEventListener("ended", () => {
+        if(repeat) loadSong(index);
+        else index = (index+1)%items.length; loadSong(index);
+    });
 
-    shuffleBtn.onclick = ()=>{
-        index = Math.floor(Math.random()*playlistItems.length);
-        loadSong(index);
-    };
-
-    repeatBtn.onclick = ()=>{
-        repeat = !repeat;
-        alert("Repeat "+(repeat?"ON":"OFF"));
-    };
-
-    player.addEventListener("ended", ()=>{
-        if(repeat){
-            loadSong(index);
-        }else{
-            index = (index+1)%playlistItems.length;
-            loadSong(index);
-        }
-    }); // <-- CLOSES player ended listener
-
-    // ===================
-    // Song by URL & Filter
-    // ===================
-    function loadSongByUrl(url, name){
-        if(!url) return;
-        initAudio();
-
-        items.forEach(li=>li.classList.remove("active"));
-        const li = items.find(li=>li.dataset.url===url);
-        if(li) li.classList.add("active");
-
-        player.src = encodeURI(url);
-        player.play();
-        isPlaying = true;
-        titleEl.textContent = "🎶 Now Playing: " + name;
-        index = items.findIndex(li=>li.dataset.url===url);
-    }
-
-    function renderPlaylist() {
-        playlistEl.innerHTML = "";
+    // ----------- Genre Filter -----------
+    function filterGenre() {
         const selected = genreFilter.value;
-        items = [];
-
-        playlist.forEach(song => {
-            if(selected === "all" || song.genre === selected){
-                const li = document.createElement("li");
-                li.textContent = song.name.replace(/_/g,' ');
-                li.dataset.url = song.url;
-                li.dataset.genre = song.genre;
-                li.addEventListener("click", ()=> loadSongByUrl(song.url, song.name.replace(/_/g,' ')));
-                playlistEl.appendChild(li);
-                items.push(li);
+        items.forEach((li,i) => {
+            if(selected === "all" || li.dataset.genre === selected){
+                li.style.display = "";
+            } else {
+                li.style.display = "none";
             }
         });
-        index = 0;
+        // reset index to first visible song
+        const firstVisible = items.findIndex(li=>li.style.display !== "none");
+        if(firstVisible >=0) index = firstVisible;
     }
 
-}); // <-- CLOSES DOMContentLoaded listener
+    genreFilter.addEventListener("change", filterGenre);
+    filterGenre(); // initial filter
+});
 </script>
 <!--
 <div style="margin-top:20px;">
