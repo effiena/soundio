@@ -1,107 +1,3 @@
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SOUNDIO</title>
-
-<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='soundio.png') }}">
-<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='soundiologo.png') }}">
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Soundio">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<style>
-html, body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    margin: 0;
-    padding: 0;
-    font-family: Montserrat, sans-serif;
-    background: #c07ea0;
-    text-align: center;
-    background: radial-gradient(circle at 20% 20%, #ff9ed6 0%, transparent 25%),
-                radial-gradient(circle at 80% 30%, #f6a6ff 0%, transparent 25%),
-                radial-gradient(circle at 30% 70%, #ffd6f3 0%, transparent 25%),
-                radial-gradient(circle at 70% 80%, #ff7acb 0%, transparent 25%),
-                linear-gradient(180deg,#2a0f3a,#7b3fa8,#ff7acb);
-    background-attachment: fixed;
-}
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(circle at 10% 20%, rgba(255,255,255,0.25) 0, transparent 40%),
-        radial-gradient(circle at 80% 10%, rgba(255,255,255,0.2) 0, transparent 40%),
-        radial-gradient(circle at 50% 90%, rgba(255,255,255,0.15) 0, transparent 40%);
-    backdrop-filter: blur(40px);
-    pointer-events: none;
-    z-index: -1;   /* ← ADD THIS */
-}
-#logo-container { margin-top:20px; display:flex; justify-content:center; position:relative; }
-#soundio-logo { width:110px; aspect-ratio:1/1; border-radius:50%; object-fit:cover; border:4px solid rgb(151,43,135); box-shadow:0 0 10px rgba(248,15,248,0.5); transition:0.05s; position:relative; z-index:1; }
-h1 { font-size:36px; font-weight:700; margin:15px 0; background:linear-gradient(90deg,#420375,#a75692); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:0 2px 6px rgba(215, 36, 89, 0.651);}
-#current-song-container { width:90%; max-width:600px; margin:10px auto; overflow:hidden; white-space:nowrap; background:rgba(255,255,255,0.15); backdrop-filter:blur(12px) saturate(180%); border-radius:24px; border:1px solid rgba(255,255,255,0.3); padding:12px 16px; text-align:left; box-shadow:0 8px 20px rgba(233,120,200,0.25),0 4px 10px rgba(0,0,0,0.1);}
-#current-song { font-weight:bold; font-size:18px; color:#3b032d; display:inline-block; text-shadow:0 2px 4px rgb(65, 13, 44);}
-#playlist { list-style:none; padding:0; margin:10px auto; max-height:240px; overflow-y:auto; width:90%; max-width:600px; border-radius:8px; box-shadow:0 3px 8px rgba(113, 1, 85, 0.991); background:rgba(255,255,255,0.05);}
-#playlist li { padding:12px 10px; cursor:pointer; border-bottom:1px solid #eaa0a0; transition:background 0.3s;}
-#playlist li:hover { background:#e187ca68; } 
-#playlist li.active { background:#f9abcf62; color:#f349c050; font-weight:bold; }
-.player-container { margin-top:20px; display:flex; flex-direction:column; align-items:center; }
-audio { width:90%; max-width:600px; margin-bottom:15px; }
-button { background:#9e4e6e; color:#fff; border:none; padding:10px 16px; margin:5px; border-radius:6px; cursor:pointer; transition:0.3s; }
-button:hover { background:#c16fa1; }
-</style>
-</head>
-<body>
-
-<div id="logo-container">
-    <img src="{{ url_for('static', filename='soundiologo.png') }}" id="soundio-logo">
-</div>
-
-<h1>🎶 SOUNDIO 🎶</h1>
-
-<div style="margin:15px 0;">
-    <label for="genre-filter">Genre: </label>
-    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
-        <option value="all">All</option>
-        <option value="Malay">Malay</option>
-        <option value="English">English</option>
-        <option value="Mandarin">Mandarin</option>
-        <option value="Korean">Korean</option>
-    </select>
-</div>
-
-<div id="current-song-container">
-    <span id="current-song">🎵 Select a song to play 🎵</span>
-</div>
-
-    <ul id="playlist">
-{% for song in playlist %}
-    {# Data-src uses raw filename; JS will encode URI #}
-        <li data-src="/static/music/{{ song }}">
-        🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}
-    </li>
-{% endfor %}
-</ul>
-
-<div class="player-container">
-    <audio id="player" playsinline controls></audio>
-    <div>
-        <button id="prev-btn">⏮ Prev</button>
-        <button id="play-pause-btn">▶️ Play / ⏸ Pause</button>
-        <button id="stop-btn">⏹ Stop</button>
-        <button id="next-btn">⏭ Next</button>
-        <button id="shuffle-btn">🔀 Shuffle</button>
-        <button id="repeat-btn">🔁 Repeat</button>
-    </div>
-</div>
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
@@ -111,119 +7,98 @@ document.addEventListener("DOMContentLoaded", () => {
     const logo = document.getElementById("soundio-logo");
 
     let playlist = []; // full playlist from backend
-    let items = [];    // visible songs after filter
+    let items = [];    // filtered playlist
     let index = 0;
     let isPlaying = false;
-    let repeat = false
+    let repeat = false;
     let audioCtx, analyser, source, dataArray;
 
-function updateTitle(name){
-        titleEl.textContent = "🎶 Now Playing: " + name;
+    function initAudio() {
+        if (audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(player);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        animateVisuals();
     }
 
+    function animateVisuals() {
+        if(!analyser) return;
+        requestAnimationFrame(animateVisuals);
+        analyser.getByteFrequencyData(dataArray);
+        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
 
-function initAudio() {
-    if(audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    source = audioCtx.createMediaElementSource(player);
-    analyser = audioCtx.createAnalyser();
-    source.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    analyser.fftSize = 256;
-    dataArray = new Uint8Array(analyser.frequencyBinCount);
-    animateVisuals();
-}
+        const logoScale = 0.9 + (avg/255)*0.3;
+        const logoGlow = (avg/255)*15;
+        logo.style.transform = `scale(${logoScale})`;
+        logo.style.boxShadow = `0 0 ${logoGlow}px rgba(230,194,41,0.8)`;
+        logo.style.setProperty('--wave-scale', 1 + (avg/255)*0.3);
+        logo.style.setProperty('--wave-glow', logoGlow);
 
-function animateVisuals() {
-    if(!analyser) return;
-    requestAnimationFrame(animateVisuals);
+        const textScale = 1 + (avg/255)*0.08;
+        const textGlow = (avg/255)*8;
+        titleEl.style.transform = `scale(${textScale})`;
+        titleEl.style.textShadow = `0 0 ${textGlow}px rgba(255,255,255,0.8), 0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
+    }
 
-    analyser.getByteFrequencyData(dataArray);
-    let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
+    function loadSong(i){
+        if(!items[i]) return;
+        const song = items[i];
+        items.forEach(li=>li.classList.remove("active"));
+        song.li.classList.add("active");
 
-    // Logo pulsing
-    const logoScale = 0.9 + (avg / 255) * 0.3;
-    const logoGlow = (avg / 255) * 15;
-    logo.style.transform = `scale(${logoScale})`;
-    logo.style.boxShadow = `0 0 ${logoGlow}px rgba(230,194,41,0.8)`;
-    logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
-    logo.style.setProperty('--wave-glow', logoGlow);
-
-    // Now Playing text pulsing
-    const textScale = 1 + (avg / 255) * 0.08; // smaller pulse for text
-    const textGlow = (avg / 255) * 8;
-    titleEl.style.transform = `scale(${textScale})`;
-    titleEl.style.textShadow = `0 0 ${textGlow}px rgba(255,255,255,0.8),
-                                0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
-}
-
-// Make sure you call initAudio() inside your loadSong function
-function loadSongByUrl(url, name){
-    if(!url) return;
-    initAudio(); // initialize audio and animations
-
-    // Highlight current song
-    items.forEach(li=>li.classList.remove("active"));
-    const li = items.find(li=>li.dataset.url===url);
-    if(li) li.classList.add("active");
-
-    player.src = encodeURI(url);
-    player.play();
-    isPlaying = true;
-    titleEl.textContent = "🎶 Now Playing: " + name;
-    index = items.findIndex(li=>li.dataset.url===url);
-}
-
+        initAudio();
+        player.src = encodeURI(song.url);
+        player.play().catch(()=>{}); // mobile autoplay fix
+        titleEl.textContent = "🎶 Now Playing: " + song.name;
+        index = i;
+        isPlaying = true;
+    }
 
     function renderPlaylist() {
         playlistEl.innerHTML = "";
         const selected = genreFilter.value;
         items = [];
 
-        playlist.forEach(song => {
-            if(selected === "all" || song.genre === selected){
+        playlist.forEach((song) => {
+            if (selected === "all" || song.genre === selected) {
                 const li = document.createElement("li");
                 li.textContent = song.name.replace(/_/g,' ');
                 li.dataset.url = song.url;
                 li.dataset.genre = song.genre;
-                li.addEventListener("click", ()=> loadSongByUrl(song.url, song.name.replace(/_/g,' ')));
+                li.addEventListener("click", ()=> loadSong(items.length));
                 playlistEl.appendChild(li);
-                items.push(li);
+                items.push({ ...song, li });
             }
         });
-        index = 0;
+
+        if(items[0]) loadSong(0);
     }
 
-
-
     // Buttons
-    document.getElementById("play-pause-btn").onclick = ()=> {
-        if(!player.src){ if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); return; }
-        if(isPlaying){ player.pause(); this.textContent="▶️"; } 
-        else{ player.play(); this.textContent="⏸"; }
+    document.getElementById("play-pause-btn").onclick = () => {
+        if(!player.src && items[0]) loadSong(0);
+        else if(isPlaying){ player.pause(); this.textContent="▶️"; }
+        else{ player.play().catch(()=>{}); this.textContent="⏸"; }
         isPlaying = !isPlaying;
     };
-    document.getElementById("stop-btn").onclick = ()=> { player.pause(); player.currentTime=0; isPlaying=false; };
-    document.getElementById("next-btn").onclick = ()=> { index = repeat?index:(index+1)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
-    document.getElementById("prev-btn").onclick = ()=> { index = (index-1+items.length)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
-    document.getElementById("shuffle-btn").onclick = ()=>{
-        items.sort(()=>Math.random()-0.5);
-        renderPlaylist();
-        if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent);
-    };
-    document.getElementById("repeat-btn").onclick = ()=>{ repeat=!repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
-    player.addEventListener("ended", ()=> { index = repeat?index:(index+1)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); });
+    document.getElementById("stop-btn").onclick = () => { player.pause(); player.currentTime=0; isPlaying=false; };
+    document.getElementById("next-btn").onclick = () => { index = repeat ? index : (index+1)%items.length; loadSong(index); };
+    document.getElementById("prev-btn").onclick = () => { index = (index-1+items.length)%items.length; loadSong(index); };
+    document.getElementById("shuffle-btn").onclick = () => { items.sort(()=>Math.random()-0.5); renderPlaylist(); };
+    document.getElementById("repeat-btn").onclick = () => { repeat = !repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
 
+    player.addEventListener("ended", () => { index = repeat ? index : (index+1)%items.length; loadSong(index); });
     genreFilter.addEventListener("change", renderPlaylist);
 
-    // Fetch playlist from backend
+    // Fetch songs from backend
     fetch("/songs")
-        .then(r=>r.json())
-        .then(data=>{
-            playlist = data; // expect [{name, url, genre}]
-            renderPlaylist();
-        })
-        .catch(e=>console.error("Failed to load songs", e));
+        .then(res => res.json())
+        .then(data => { playlist = data; renderPlaylist(); })
+        .catch(e => console.error("Failed to load songs", e));
 });
 </script>
 
