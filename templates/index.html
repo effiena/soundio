@@ -71,19 +71,15 @@ h1 {
     width: 90%;
     max-width: 600px;
     margin: 10px auto;
-    overflow: hidden;
-    white-space: nowrap;
-
-    /* Frosted glass iPhone style */
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border-radius: 24px;
-    border: 1px solid rgba(255,255,255,0.3);
-
     padding: 12px 16px;
-    text-align: left;
+    border-radius: 24px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.3);
     box-shadow: 0 8px 20px rgba(233,120,200,0.25), 0 4px 10px rgba(0,0,0,0.1);
+    position: relative; /* important for ::after */
+    overflow: hidden;
     transition: all 0.3s ease;
 }
 
@@ -107,10 +103,13 @@ h1 {
 #current-song {
     font-weight: bold;
     font-size: 18px;
-    color: #fff; /* better contrast on frosted background */
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
     display: inline-block;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 1;
 }
+    
 #playlist {
     list-style: none;
     padding: 0;
