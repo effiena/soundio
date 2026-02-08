@@ -14,118 +14,152 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
-/* Body & background */
 html, body {
-    margin: 0;
-    font-family: Montserrat, sans-serif;
-    background: linear-gradient(135deg, #e0a3d6, #c07ea0, #b266c2);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: 100%;
+    max-width: 100%;
     overflow-x: hidden;
-    color: #fff;
+    margin: 0;
+    padding: 0;
+    font-family: Montserrat, sans-serif;
+    background: #c07ea0;
+    text-align: center;
 }
 
-/* Logo with glow animation */
 #logo-container {
     margin-top: 20px;
+    display: flex;
+    justify-content: center;
     position: relative;
 }
+
 #soundio-logo {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
-    border: 3px solid rgba(255,255,255,0.3);
-    box-shadow: 0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,182,193,0.4);
-    transition: transform 0.2s, box-shadow 0.2s;
+    object-fit: cover;
+    border: 4px solid rgb(151, 43, 135);
+    box-shadow: 0 0 10px rgba(248, 15, 248, 0.5);
+    transition: transform 0.05s linear, box-shadow 0.05s linear;
+    position: relative;
+    z-index: 1;
 }
 
-/* App title */
+#soundio-logo::after {
+    content: '';
+    position: absolute;
+    top: -6px; left: -6px; right: -6px; bottom: -6px;
+    border-radius: 50%;
+    border: 3px solid black;
+    transform: scale(var(--wave-scale,1));
+    box-shadow: 0 0 calc(var(--wave-glow,10px)) rgb(122, 82, 114), 
+                0 0 calc(var(--wave-glow,20px)) rgb(113, 113, 110), 
+                0 0 calc(var(--wave-glow,30px)) rgb(225, 72, 156);
+    z-index: -1;
+}
+
 h1 {
-    margin: 15px 0;
     font-size: 36px;
     font-weight: 700;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    margin: 15px 0;
+    background: linear-gradient(90deg, #9c2d7b92, #a75692);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 6px rgba(44, 6, 15, 0.5);
 }
 
-/* Frosted glass Now Playing */
 #current-song-container {
-    margin: 10px auto;
     width: 90%;
     max-width: 600px;
-    padding: 12px 16px;
-    border-radius: 20px;
+    margin: 10px auto;
+    overflow: hidden;
+    white-space: nowrap;
+
+    /* Frosted glass iPhone style */
     background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(12px) saturate(150%);
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    text-align: center;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.3);
+
+    padding: 12px 16px;
+    text-align: left;
+    box-shadow: 0 8px 20px rgba(233,120,200,0.25), 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+#current-song-container::after {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    pointer-events: none;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    animation: rippleMove 8s linear infinite;
+}
+
+@keyframes rippleMove {
+    0% { transform: translate(0,0) rotate(0deg); }
+    50% { transform: translate(10px, 10px) rotate(45deg); }
+    100% { transform: translate(0,0) rotate(0deg); }
+}
+
+#current-song {
     font-weight: bold;
     font-size: 18px;
+    color: #fff; /* better contrast on frosted background */
+    display: inline-block;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
-
-/* Playlist */
 #playlist {
-    margin: 15px auto;
+    list-style: none;
+    padding: 0;
+    margin: 10px auto;
+    max-height: 240px;
+    overflow-y: auto;
     width: 90%;
     max-width: 600px;
-    border-radius: 20px;
-    overflow: hidden;
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(12px) saturate(150%);
-    -webkit-backdrop-filter: blur(12px) saturate(150%);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    background: rgba(255,255,255,0.05);
 }
-#playlist li {
-    list-style: none;
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: background 0.3s;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-}
-#playlist li:hover { background: rgba(255,255,255,0.2); }
-#playlist li.active { font-weight: bold; color: #fff; background: rgba(255,255,255,0.3); }
 
-/* Player controls */
+#playlist li {
+    padding: 12px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eaa0a0;
+    transition: background 0.3s;
+}
+
+#playlist li:hover { background:#e187cb; }
+#playlist li.active { background:#f9abcf; color:#9c2d7b; font-weight:bold; }
+
 .player-container {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 audio {
     width: 90%;
     max-width: 600px;
     margin-bottom: 15px;
 }
+
 button {
-    background: rgba(255,182,193,0.6);
-    border: none;
-    border-radius: 12px;
-    padding: 10px 16px;
-    margin: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-}
-button:hover {
-    background: rgba(255,182,193,0.8);
-    transform: scale(1.05);
+    background:#9e4e6e;
+    color:#fff;
+    border:none;
+    padding:10px 16px;
+    margin:5px;
+    border-radius:6px;
+    cursor:pointer;
+    transition: background 0.3s;
 }
 
-/* Genre dropdown */
-#genre-filter {
-    margin: 10px 0;
-    padding: 6px 12px;
-    border-radius: 12px;
-    border: none;
-    background: rgba(255,255,255,0.2);
-    color: #fff;
-    font-weight: bold;
-}
+button:hover { background:#c16fa1; }
 
-/* Scroll animation for long song titles */
 @keyframes scroll {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
@@ -135,31 +169,48 @@ button:hover {
 <body>
 
 <div id="logo-container">
-    <img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo" alt="Soundio Logo">
+    <img src="{{ url_for('static', filename='picture/soundiologo.png') }}" id="soundio-logo">
 </div>
 
 <h1>🎶 SOUNDIO 🎶</h1>
 
-<select id="genre-filter">
-    <option value="all">All</option>
-    <option value="Malay">Malay</option>
-    <option value="English">English</option>
-    <option value="Mandarin">Mandarin</option>
-    <option value="Korean">Korean</option>
-</select>
+<div style="margin:15px 0;">
+    <label for="genre-filter">Genre: </label>
+    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
+        <option value="all">All</option>
+        <option value="Malay">Malay</option>
+        <option value="English">English</option>
+        <option value="Mandarin">Mandarin</option>
+        <option value="Korean">Korean</option>
+    </select>
+</div>
 
-<div id="current-song-container">🎵 Select a song to play 🎵</div>
+<div id="current-song-container">
+    <span id="current-song">🎵 Select a song to play 🎵</span>
+</div>
 
-<ul id="playlist">
+<!--<ul id="playlist">
 {% for song in playlist %}
-    <li data-url="/static/music/{{ song }}" data-genre="{{ song.genre|default('English') }}">
-        🎵 {{ song.rsplit('.',1)[0].replace('_',' ') }}
+    {% if song is string %}
+        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}</li>
+    {% else %}
+        <li data-src="{{ url_for('static', filename='music/' ~ song.file|urlencode) }}">🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}</li>
+    {% endif %}
+{% endfor %}
+</ul>
+-->
+
+    <ul id="playlist">
+{% for song in playlist %}
+    {# Data-src uses raw filename; JS will encode URI #}
+        <li data-src="/static/music/{{ song }}">
+        🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}
     </li>
 {% endfor %}
 </ul>
-
+    
 <div class="player-container">
-    <audio id="player" controls></audio>
+    <audio id="player" playsinline controls></audio>
     <div>
         <button id="prev-btn">⏮ Prev</button>
         <button id="play-pause-btn">▶️ Play / ⏸ Pause</button>
@@ -170,74 +221,180 @@ button:hover {
     </div>
 </div>
 
+<!-- Dropdown for filtering 
+<div style="margin:15px 0;">
+    <label for="genre-filter">Genre: </label>
+    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
+        <option value="all">All</option>
+        <option value="Malay">Malay</option>
+        <option value="English">English</option>
+        <option value="Mandarin">Mandarin</option>
+        <option value="Korean">Korean</option>
+    </select>
+</div>-->
+
+<ul id="playlist"></ul>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
-    const playlistEl = document.getElementById("playlist");
-    const items = Array.from(playlistEl.children);
     const titleEl = document.getElementById("current-song");
+    const logo = document.getElementById("soundio-logo");
     const genreFilter = document.getElementById("genre-filter");
+    const playlistEl = document.getElementById("playlist");
 
+    let playlist = []; // full playlist from backend
+    let items = [];    // currently visible songs after filtering
     let index = 0;
     let isPlaying = false;
     let repeat = false;
 
-    function updateTitle(text){
-        titleEl.textContent = "🎶 Now Playing: " + text;
+    let audioCtx, analyser, source, dataArray;
+
+    function initAudio() {
+        if(audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(player);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        animateLogo();
     }
 
-    function loadSong(i){
-        const li = items[i];
-        if(!li) return;
-        items.forEach(it=>it.classList.remove("active"));
-        li.classList.add("active");
-        player.src = encodeURI(li.dataset.url);
+    function animateLogo() {
+        if(!analyser) return;
+        requestAnimationFrame(animateLogo);
+        analyser.getByteFrequencyData(dataArray);
+        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
+        const scale = 0.9 + (avg / 255) * 0.3;
+        const glow = (avg / 255) * 20;
+        logo.style.transform = `scale(${scale})`;
+        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+        logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
+        logo.style.setProperty('--wave-glow', glow);
+    }
+
+    function updateTitle(name){
+        titleEl.style.animation = "none";
+        titleEl.textContent = "🎶 Now Playing: " + name;
+        let container = document.getElementById("current-song-container").offsetWidth;
+        let textW = titleEl.scrollWidth;
+        if(textW > container){
+            let duration = textW / 50;
+            titleEl.style.animation = `scroll ${duration}s linear infinite`;
+        }
+    }
+
+    function renderPlaylist() {
+        playlistEl.innerHTML = "";
+        const selected = genreFilter.value.toLowerCase();
+        items = [];
+
+        playlist.forEach(song => {
+            if(selected === "all" || song.genre.toLowerCase() === selected){
+                const li = document.createElement("li");
+                li.textContent = song.name.replace(/_/g,' ');
+                li.dataset.url = song.url;
+                li.dataset.genre = song.genre;
+                li.addEventListener("click", ()=>{
+                    loadSongByUrl(song.url, song.name.replace(/_/g,' '));
+                });
+                playlistEl.appendChild(li);
+                items.push(li);
+            }
+        });
+
+        // reset index after filter
+        index = 0;
+    }
+
+    function loadSongByUrl(url, name){
+        if(!url) return;
+        initAudio();
+
+        // remove active class
+        items.forEach(li => li.classList.remove("active"));
+
+        // mark clicked item as active
+        const li = items.find(li => li.dataset.url === url);
+        if(li) li.classList.add("active");
+
+        player.src = encodeURI(url);
         player.play();
         isPlaying = true;
-        updateTitle(li.textContent);
-        index = i;
+        updateTitle(name);
+
+        // set index in current filtered items
+        index = items.findIndex(li => li.dataset.url === url);
     }
 
-    items.forEach((li,i)=>li.addEventListener("click",()=>loadSong(i)));
+    // Buttons
+    const playBtn = document.getElementById("play-pause-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const shuffleBtn = document.getElementById("shuffle-btn");
+    const repeatBtn = document.getElementById("repeat-btn");
 
-    document.getElementById("play-pause-btn").onclick = ()=>{
-        if(!player.src) loadSong(0);
-        else if(isPlaying){ player.pause(); isPlaying=false; }
-        else{ player.play(); isPlaying=true; }
-    };
-    document.getElementById("stop-btn").onclick = ()=>{
-        player.pause(); player.currentTime=0; isPlaying=false;
-    };
-    document.getElementById("next-btn").onclick = ()=>{
-        index = repeat ? index : (index+1)%items.length; loadSong(index);
-    };
-    document.getElementById("prev-btn").onclick = ()=>{
-        index = (index-1+items.length)%items.length; loadSong(index);
-    };
-    document.getElementById("shuffle-btn").onclick = ()=>{
-        for(let i=items.length-1;i>0;i--){
-            let j=Math.floor(Math.random()*(i+1));
-            [items[i].dataset.url, items[j].dataset.url]=[items[j].dataset.url, items[i].dataset.url];
-            [items[i].textContent, items[j].textContent]=[items[j].textContent, items[i].textContent];
+    playBtn.onclick = ()=>{
+        if(!player.src){ 
+            if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); 
+            return; 
         }
-        loadSong(0);
+        if(isPlaying){ player.pause(); playBtn.textContent="▶️"; }
+        else { player.play(); playBtn.textContent="⏸"; }
+        isPlaying = !isPlaying;
     };
-    document.getElementById("repeat-btn").onclick = ()=>{ repeat = !repeat; alert("Repeat " + (repeat?"ON":"OFF")); };
 
-    genreFilter.addEventListener("change", ()=>{
-        const val = genreFilter.value.toLowerCase();
-        items.forEach(li=>{
-            li.style.display = (val==="all" || li.dataset.genre.toLowerCase()===val) ? "block" : "none";
-        });
-    });
+    stopBtn.onclick = ()=>{ 
+        player.pause(); 
+        player.currentTime=0; 
+        isPlaying=false; 
+        playBtn.textContent="▶️"; 
+    };
+
+    nextBtn.onclick = ()=>{ 
+        index = repeat ? index : (index+1)%items.length; 
+        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    };
+
+    prevBtn.onclick = ()=>{ 
+        index = (index-1+items.length)%items.length; 
+        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    };
+
+    shuffleBtn.onclick = ()=>{
+        for(let i=items.length-1;i>0;i--){
+            let j = Math.floor(Math.random()*(i+1));
+            [playlist[i],playlist[j]] = [playlist[j],playlist[i]];
+        }
+        renderPlaylist();
+        if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent);
+    };
+
+    repeatBtn.onclick = ()=>{ 
+        repeat = !repeat; 
+        alert("Repeat "+(repeat?"ON":"OFF")); 
+    };
 
     player.addEventListener("ended", ()=>{
         index = repeat ? index : (index+1)%items.length; 
-        loadSong(index);
+        loadSongByUrl(items[index].dataset.url, items[index].textContent);
     });
+
+    genreFilter.addEventListener("change", ()=>{ renderPlaylist(); });
+
+    // Fetch songs from backend
+    fetch("/songs")
+        .then(r=>r.json())
+        .then(data=>{
+            playlist = data;
+            renderPlaylist();
+        });
 });
 </script>
-
 <!--
 <div style="margin-top:20px;">
     <button onclick="alert('SOUNDIO Music App © 2026 by Asli.Tech');" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
