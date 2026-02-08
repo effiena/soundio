@@ -69,16 +69,41 @@ def detect_language(filename):
     return "english"
 
 
+# -------- AUTO LANGUAGE DETECTION --------
+malay_keywords = [
+    "siti","search","exists","ukays","spring",
+    "lagu","melayu","jamal","amy","ella"
+]
+
+def detect_language(filename):
+    # detect Chinese characters
+    for c in filename:
+        if '\u4e00' <= c <= '\u9fff':
+            return "Mandarin"  # matches dropdown
+
+    name = filename.lower()
+
+    for k in malay_keywords:
+        if k in name:
+            return "Malay"
+
+    return "English"
+
 @app.route("/songs")
 def songs():
     files = [f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(".mp3")]
+    data = []
 
-    data = {
-        "malay": [],
-        "chinese": [],
-        "english": []
-    }
+    for f in files:
+        lang = detect_language(f)
+        encoded = quote(f)
+        data.append({
+            "name": f,
+            "url": f"/music/{encoded}",
+            "genre": lang
+        })
 
+    return jsonify(data)
     for f in files:
         lang = detect_language(f)
         encoded = quote(f)
