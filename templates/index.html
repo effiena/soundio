@@ -169,7 +169,28 @@ function loadSongByUrl(url, name){
     titleEl.textContent = "🎶 Now Playing: " + name;
     index = items.findIndex(li=>li.dataset.url===url);
 }
+// Add this inside your DOMContentLoaded function, after defining 'player'
+if ('mediaSession' in navigator) {
+    function updateMediaSession(title, artist="Unknown", album="SOUNDIO", artwork="/static/soundiologo.png") {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: title,
+            artist: artist,
+            album: album,
+            artwork: [
+                { src: artwork, sizes: '512x512', type: 'image/png' }
+            ]
+        });
+    }
 
+    navigator.mediaSession.setActionHandler('play', () => player.play());
+    navigator.mediaSession.setActionHandler('pause', () => player.pause());
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+        prevSong();  // define prevSong() to load previous track
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+        nextSong();  // define nextSong() to load next track
+    });
+}
 
     function renderPlaylist() {
         playlistEl.innerHTML = "";
