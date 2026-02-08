@@ -21,7 +21,6 @@ html, body {
     margin: 0;
     padding: 0;
     font-family: Montserrat, sans-serif;
-    background: #c07ea0;
     text-align: center;
     background: radial-gradient(circle at 20% 20%, #ff9ed6 0%, transparent 25%),
                 radial-gradient(circle at 80% 30%, #f6a6ff 0%, transparent 25%),
@@ -40,7 +39,7 @@ body::before {
         radial-gradient(circle at 50% 90%, rgba(255,255,255,0.15) 0, transparent 40%);
     backdrop-filter: blur(40px);
     pointer-events: none;
-    z-index: -1;   /* ← ADD THIS */
+    z-index: -1;
 }
 #logo-container {
     margin-top: 20px;
@@ -48,10 +47,9 @@ body::before {
     justify-content: center;
     position: relative;
 }
-
 #soundio-logo {
     width: 110px;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1/1;
     border-radius: 50%;
     object-fit: cover;
     border: 4px solid rgb(151, 43, 135);
@@ -60,7 +58,6 @@ body::before {
     position: relative;
     z-index: 1;
 }
-
 #soundio-logo::after {
     content: '';
     position: absolute;
@@ -73,7 +70,6 @@ body::before {
                 0 0 calc(var(--wave-glow,30px)) rgb(225, 72, 156);
     z-index: -1;
 }
-
 h1 {
     font-size: 36px;
     font-weight: 700;
@@ -83,27 +79,22 @@ h1 {
     -webkit-text-fill-color: transparent;
     text-shadow: 0 2px 6px rgba(44, 6, 15, 0.5);
 }
-
 #current-song-container {
     width: 90%;
     max-width: 600px;
     margin: 10px auto;
     overflow: hidden;
     white-space: nowrap;
-
-    /* Frosted glass iPhone style */
     background: rgba(255,255,255,0.15);
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     border-radius: 24px;
     border: 1px solid rgba(255,255,255,0.3);
-
     padding: 12px 16px;
     text-align: left;
     box-shadow: 0 8px 20px rgba(233,120,200,0.25), 0 4px 10px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
 }
-
 #current-song-container::after {
     content: '';
     position: absolute;
@@ -114,17 +105,15 @@ h1 {
     border-radius: 50%;
     animation: rippleMove 8s linear infinite;
 }
-
 @keyframes rippleMove {
     0% { transform: translate(0,0) rotate(0deg); }
     50% { transform: translate(10px, 10px) rotate(45deg); }
     100% { transform: translate(0,0) rotate(0deg); }
 }
-
 #current-song {
     font-weight: bold;
     font-size: 18px;
-    color: #fff; /* better contrast on frosted background */
+    color: #fff;
     display: inline-block;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
@@ -140,30 +129,25 @@ h1 {
     box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     background: rgba(255,255,255,0.05);
 }
-
 #playlist li {
     padding: 12px 10px;
     cursor: pointer;
     border-bottom: 1px solid #eaa0a0;
     transition: background 0.3s;
 }
-
 #playlist li:hover { background:#e187cb; }
 #playlist li.active { background:#f9abcf; color:#9c2d7b; font-weight:bold; }
-
 .player-container {
     margin-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-
 audio {
     width: 90%;
     max-width: 600px;
     margin-bottom: 15px;
 }
-
 button {
     background:#9e4e6e;
     color:#fff;
@@ -174,9 +158,7 @@ button {
     cursor:pointer;
     transition: background 0.3s;
 }
-
 button:hover { background:#c16fa1; }
-
 @keyframes scroll {
   0% { transform: translateX(100%); }
   100% { transform: translateX(-100%); }
@@ -206,26 +188,14 @@ button:hover { background:#c16fa1; }
     <span id="current-song">🎵 Select a song to play 🎵</span>
 </div>
 
-<!--<ul id="playlist">
+<ul id="playlist">
 {% for song in playlist %}
-    {% if song is string %}
-        <li data-src="{{ url_for('static', filename='music/' ~ song|urlencode) }}">🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}</li>
-    {% else %}
-        <li data-src="{{ url_for('static', filename='music/' ~ song.file|urlencode) }}">🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}</li>
-    {% endif %}
-{% endfor %}
-</ul>
--->
-
-    <ul id="playlist">
-{% for song in playlist %}
-    {# Data-src uses raw filename; JS will encode URI #}
-        <li data-src="/static/music/{{ song }}">
-        🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}
+    <li data-src="/static/music/{{ song.file }}" data-genre="{{ song.genre }}">
+        🎵 {{ song.file.rsplit('.', 1)[0].replace('_',' ') }}
     </li>
 {% endfor %}
 </ul>
-    
+
 <div class="player-container">
     <audio id="player" playsinline controls></audio>
     <div>
@@ -238,120 +208,107 @@ button:hover { background:#c16fa1; }
     </div>
 </div>
 
-<!-- Dropdown for filtering 
-<div style="margin:15px 0;">
-    <label for="genre-filter">Genre: </label>
-    <select id="genre-filter" style="padding:6px 10px; border-radius:6px;">
-        <option value="all">All</option>
-        <option value="Malay">Malay</option>
-        <option value="English">English</option>
-        <option value="Mandarin">Mandarin</option>
-        <option value="Korean">Korean</option>
-    </select>
-</div>-->
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-
     const player = document.getElementById("player");
     const titleEl = document.getElementById("current-song");
-    const playlistItems = document.querySelectorAll("#playlist li");
-    const playBtn = document.getElementById("play-pause-btn");
-    const stopBtn = document.getElementById("stop-btn");
-    const nextBtn = document.getElementById("next-btn");
-    const prevBtn = document.getElementById("prev-btn");
-    const shuffleBtn = document.getElementById("shuffle-btn");
-    const repeatBtn = document.getElementById("repeat-btn");
+    const genreFilter = document.getElementById("genre-filter");
+    const playlistEl = document.getElementById("playlist");
+    const logo = document.getElementById("soundio-logo");
 
+    let allItems = Array.from(playlistEl.querySelectorAll("li"));
+    let visibleItems = [...allItems];
     let index = 0;
     let repeat = false;
     let isPlaying = false;
 
+    // AUDIO CONTEXT for glowing logo
+    let audioCtx, analyser, source, dataArray;
+    function initAudio(){
+        if(audioCtx) return;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        source = audioCtx.createMediaElementSource(player);
+        analyser = audioCtx.createAnalyser();
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        animateLogo();
+    }
+
+    function animateLogo(){
+        if(!analyser) return;
+        requestAnimationFrame(animateLogo);
+        analyser.getByteFrequencyData(dataArray);
+        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
+        const scale = 0.9 + (avg / 255) * 0.3;
+        const glow = (avg / 255) * 20;
+        logo.style.transform = `scale(${scale})`;
+        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
+        logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
+        logo.style.setProperty('--wave-glow', glow);
+    }
+
+    // Render filtered playlist
+    function renderPlaylist(){
+        const genre = genreFilter.value.toLowerCase();
+        playlistEl.innerHTML = "";
+        visibleItems = allItems.filter(li => genre === "all" || li.dataset.genre.toLowerCase() === genre);
+        visibleItems.forEach(li => playlistEl.appendChild(li));
+    }
+
+    // Load song
     function loadSong(i){
-        if(!playlistItems[i]) return;
-
-        playlistItems.forEach(li=>li.classList.remove("active"));
-        playlistItems[i].classList.add("active");
-
-        const src = playlistItems[i].dataset.src;
-        const name = playlistItems[i].textContent;
-
-        player.src = encodeURI(src);
+        if(!visibleItems[i]) return;
+        visibleItems.forEach(li=>li.classList.remove("active"));
+        visibleItems[i].classList.add("active");
+        player.src = encodeURI(visibleItems[i].dataset.src);
         player.play();
-
-        titleEl.textContent = "🎶 Now Playing: " + name;
+        initAudio(); // start audio context for glowing
+        titleEl.textContent = "🎶 Now Playing: " + visibleItems[i].textContent;
         index = i;
         isPlaying = true;
     }
 
-    playlistItems.forEach((li,i)=>{
-        li.addEventListener("click", ()=> loadSong(i));
+    playlistEl.addEventListener("click", e=>{
+        if(e.target.tagName === "LI"){
+            const i = visibleItems.indexOf(e.target);
+            if(i>=0) loadSong(i);
+        }
     });
 
-    playBtn.onclick = ()=>{
-        if(!player.src){
-            loadSong(0);
-            return;
-        }
-        if(isPlaying){
-            player.pause();
-            playBtn.textContent="▶️";
-        }else{
-            player.play();
-            playBtn.textContent="⏸";
-        }
+    genreFilter.addEventListener("change", () => {
+        renderPlaylist();
+        if(visibleItems[0]) loadSong(0);
+    });
+
+    // Playback buttons
+    document.getElementById("play-pause-btn").onclick = ()=>{
+        if(!player.src){ loadSong(0); return; }
+        if(isPlaying){ player.pause(); this.textContent="▶️"; }
+        else{ player.play(); this.textContent="⏸"; }
         isPlaying = !isPlaying;
     };
-
-    stopBtn.onclick = ()=>{
-        player.pause();
-        player.currentTime=0;
-        isPlaying=false;
-        playBtn.textContent="▶️";
-    };
-
-    nextBtn.onclick = ()=>{
-        index = (index+1)%playlistItems.length;
-        loadSong(index);
-    };
-
-    prevBtn.onclick = ()=>{
-        index = (index-1+playlistItems.length)%playlistItems.length;
-        loadSong(index);
-    };
-
-    shuffleBtn.onclick = ()=>{
-        index = Math.floor(Math.random()*playlistItems.length);
-        loadSong(index);
-    };
-
-    repeatBtn.onclick = ()=>{
-        repeat = !repeat;
-        alert("Repeat "+(repeat?"ON":"OFF"));
-    };
+    document.getElementById("stop-btn").onclick = ()=>{ player.pause(); player.currentTime=0; isPlaying=false; };
+    document.getElementById("next-btn").onclick = ()=>{ index=(index+1)%visibleItems.length; loadSong(index); };
+    document.getElementById("prev-btn").onclick = ()=>{ index=(index-1+visibleItems.length)%visibleItems.length; loadSong(index); };
+    document.getElementById("shuffle-btn").onclick = ()=>{ index=Math.floor(Math.random()*visibleItems.length); loadSong(index); };
+    document.getElementById("repeat-btn").onclick = ()=>{ repeat=!repeat; alert("Repeat " + (repeat?"ON":"OFF")); };
 
     player.addEventListener("ended", ()=>{
-        if(repeat){
-            loadSong(index);
-        }else{
-            index = (index+1)%playlistItems.length;
-            loadSong(index);
-        }
+        if(repeat) loadSong(index);
+        else { index=(index+1)%visibleItems.length; loadSong(index); }
     });
 
+    // INITIAL render
+    renderPlaylist();
 });
 </script>
-<!--
-<div style="margin-top:20px;">
-    <button onclick="alert('SOUNDIO Music App © 2026 by Asli.Tech');" style="padding:8px 12px; border-radius:6px; border:none; background:#8c9352; color:#F4F1DE; cursor:pointer;">
-        About Us
-    </button>
-</div>
--->
+
 <footer style="text-align:center; padding:10px; font-size:14px; color:#555;">
     © 2026 Soundio Music App. All rights reserved. <br>
-   <a> Created by Asli.Tech</a>
-<a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
+    <a>Created by Asli.Tech</a>
+    <a href="/license.txt" target="_blank">SOUNDIO Music App License</a>
 </footer>
 
 </body>
