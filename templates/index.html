@@ -109,7 +109,17 @@ h1 {
     position: relative;
     z-index: 1;
 }
-    
+@keyframes scroll {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+#current-song.scrolling {
+    display: inline-block;
+    white-space: nowrap;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
 #playlist {
     list-style: none;
     padding: 0;
