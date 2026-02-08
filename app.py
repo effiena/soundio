@@ -17,7 +17,7 @@ malay_keywords = [
 
 korean_keywords = [
     "bts","blackpink","twice","seventeen","exo","got7","redvelvet","straykids","ateez",
-    "sudden shower","dynamite","butter"  # add English-named K-pop songs here
+    "sudden","dynamite","butter"  # add English-named K-pop songs here
 ]
 
 def detect_language(filename):
