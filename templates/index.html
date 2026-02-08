@@ -217,13 +217,11 @@ button:hover { background:#c16fa1; }
 </ul>
 -->
 
-<ul id="playlist">
+    <ul id="playlist">
 {% for song in playlist %}
-    <li 
-        data-src="/static/music/{{ song }}" 
-        data-lang="{{ song_languages.get(song, 'Other') }}"
-    >
-        🎵 {{ song.rsplit('.', 1)[0].replace('_', ' ') }}
+    {# Data-src uses raw filename; JS will encode URI #}
+        <li data-src="/static/music/{{ song }}">
+        🎵{{ song.rsplit('.', 1)[0].replace('_', ' ') }}
     </li>
 {% endfor %}
 </ul>
