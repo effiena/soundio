@@ -252,100 +252,10 @@ button:hover { background:#c16fa1; }
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
     const player = document.getElementById("player");
     const titleEl = document.getElementById("current-song");
-    const logo = document.getElementById("soundio-logo");
-    const genreFilter = document.getElementById("genre-filter");
-    const playlistEl = document.getElementById("playlist");
-
-    let playlist = []; // full playlist from backend
-    let items = [];    // currently visible songs after filtering
-    let index = 0;
-    let isPlaying = false;
-    let repeat = false;
-
-    let audioCtx, analyser, source, dataArray;
-
-    function initAudio() {
-        if(audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        source = audioCtx.createMediaElementSource(player);
-        analyser = audioCtx.createAnalyser();
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        analyser.fftSize = 256;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        animateLogo();
-    }
-
-    function animateLogo() {
-        if(!analyser) return;
-        requestAnimationFrame(animateLogo);
-        analyser.getByteFrequencyData(dataArray);
-        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
-        const scale = 0.9 + (avg / 255) * 0.3;
-        const glow = (avg / 255) * 20;
-        logo.style.transform = `scale(${scale})`;
-        logo.style.boxShadow = `0 0 ${glow}px rgba(230,194,41,0.8)`;
-        logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
-        logo.style.setProperty('--wave-glow', glow);
-    }
-
-    function updateTitle(name){
-        titleEl.style.animation = "none";
-        titleEl.textContent = "🎶 Now Playing: " + name;
-        let container = document.getElementById("current-song-container").offsetWidth;
-        let textW = titleEl.scrollWidth;
-        if(textW > container){
-            let duration = textW / 50;
-            titleEl.style.animation = `scroll ${duration}s linear infinite`;
-        }
-    }
-
-    function renderPlaylist() {
-        playlistEl.innerHTML = "";
-        const selected = genreFilter.value.toLowerCase();
-        items = [];
-
-        playlist.forEach(song => {
-            if(selected === "all" || song.genre.toLowerCase() === selected){
-                const li = document.createElement("li");
-                li.textContent = song.name.replace(/_/g,' ');
-                li.dataset.url = song.url;
-                li.dataset.genre = song.genre;
-                li.addEventListener("click", ()=>{
-                    loadSongByUrl(song.url, song.name.replace(/_/g,' '));
-                });
-                playlistEl.appendChild(li);
-                items.push(li);
-            }
-        });
-
-        // reset index after filter
-        index = 0;
-    }
-
-    function loadSongByUrl(url, name){
-        if(!url) return;
-        initAudio();
-
-        // remove active class
-        items.forEach(li => li.classList.remove("active"));
-
-        // mark clicked item as active
-        const li = items.find(li => li.dataset.url === url);
-        if(li) li.classList.add("active");
-
-        player.src = encodeURI(url);
-        player.play();
-        isPlaying = true;
-        updateTitle(name);
-
-        // set index in current filtered items
-        index = items.findIndex(li => li.dataset.url === url);
-    }
-
-    // Buttons
+    const playlistItems = document.querySelectorAll("#playlist li");
     const playBtn = document.getElementById("play-pause-btn");
     const stopBtn = document.getElementById("stop-btn");
     const nextBtn = document.getElementById("next-btn");
@@ -353,61 +263,82 @@ document.addEventListener("DOMContentLoaded", () => {
     const shuffleBtn = document.getElementById("shuffle-btn");
     const repeatBtn = document.getElementById("repeat-btn");
 
+    let index = 0;
+    let repeat = false;
+    let isPlaying = false;
+
+    function loadSong(i){
+        if(!playlistItems[i]) return;
+
+        playlistItems.forEach(li=>li.classList.remove("active"));
+        playlistItems[i].classList.add("active");
+
+        const src = playlistItems[i].dataset.src;
+        const name = playlistItems[i].textContent;
+
+        player.src = encodeURI(src);
+        player.play();
+
+        titleEl.textContent = "🎶 Now Playing: " + name;
+        index = i;
+        isPlaying = true;
+    }
+
+    playlistItems.forEach((li,i)=>{
+        li.addEventListener("click", ()=> loadSong(i));
+    });
+
     playBtn.onclick = ()=>{
-        if(!player.src){ 
-            if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); 
-            return; 
+        if(!player.src){
+            loadSong(0);
+            return;
         }
-        if(isPlaying){ player.pause(); playBtn.textContent="▶️"; }
-        else { player.play(); playBtn.textContent="⏸"; }
+        if(isPlaying){
+            player.pause();
+            playBtn.textContent="▶️";
+        }else{
+            player.play();
+            playBtn.textContent="⏸";
+        }
         isPlaying = !isPlaying;
     };
 
-    stopBtn.onclick = ()=>{ 
-        player.pause(); 
-        player.currentTime=0; 
-        isPlaying=false; 
-        playBtn.textContent="▶️"; 
+    stopBtn.onclick = ()=>{
+        player.pause();
+        player.currentTime=0;
+        isPlaying=false;
+        playBtn.textContent="▶️";
     };
 
-    nextBtn.onclick = ()=>{ 
-        index = repeat ? index : (index+1)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    nextBtn.onclick = ()=>{
+        index = (index+1)%playlistItems.length;
+        loadSong(index);
     };
 
-    prevBtn.onclick = ()=>{ 
-        index = (index-1+items.length)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    prevBtn.onclick = ()=>{
+        index = (index-1+playlistItems.length)%playlistItems.length;
+        loadSong(index);
     };
 
     shuffleBtn.onclick = ()=>{
-        for(let i=items.length-1;i>0;i--){
-            let j = Math.floor(Math.random()*(i+1));
-            [playlist[i],playlist[j]] = [playlist[j],playlist[i]];
-        }
-        renderPlaylist();
-        if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent);
+        index = Math.floor(Math.random()*playlistItems.length);
+        loadSong(index);
     };
 
-    repeatBtn.onclick = ()=>{ 
-        repeat = !repeat; 
-        alert("Repeat "+(repeat?"ON":"OFF")); 
+    repeatBtn.onclick = ()=>{
+        repeat = !repeat;
+        alert("Repeat "+(repeat?"ON":"OFF"));
     };
 
     player.addEventListener("ended", ()=>{
-        index = repeat ? index : (index+1)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+        if(repeat){
+            loadSong(index);
+        }else{
+            index = (index+1)%playlistItems.length;
+            loadSong(index);
+        }
     });
 
-    genreFilter.addEventListener("change", ()=>{ renderPlaylist(); });
-
-    // Fetch songs from backend
-    fetch("/songs")
-        .then(r=>r.json())
-        .then(data=>{
-            playlist = data;
-            renderPlaylist();
-        });
 });
 </script>
 <!--
