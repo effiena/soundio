@@ -97,15 +97,34 @@ h1 {
     transition: all 0.3s ease;
 }
 
-#current-song-container::after {
-    content: '';
-    position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    pointer-events: none;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-    animation: rippleMove 8s linear infinite;
+#current-song-container {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 30px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 10px 30px rgba(255,255,255,0.2), 0 5px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+#current-song {
+    font-weight: bold;
+    font-size: 20px;
+    color: #fff;
+    display: inline-block;
+    white-space: nowrap;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    animation: scrollText 10s linear infinite;
+}
+
+@keyframes scrollText {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
 }
 
 @keyframes rippleMove {
@@ -114,19 +133,6 @@ h1 {
     100% { transform: translate(0,0) rotate(0deg); }
 }
 
-#current-song {
-    font-weight: bold;
-    font-size: 18px;
-    color: #fff;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    display: inline-block;
-    position: relative;
-    z-index: 1;
-}
-@keyframes scroll {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
 
 #current-song.scrolling {
     display: inline-block;
@@ -137,25 +143,34 @@ h1 {
 #playlist {
     list-style: none;
     padding: 0;
-    margin: 10px auto;
+    margin: 20px auto;
     max-height: 240px;
     overflow-y: auto;
     width: 90%;
     max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    background: rgba(255,255,255,0.05);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 8px 20px rgba(255,255,255,0.2), 0 4px 10px rgba(0,0,0,0.15);
 }
 
 #playlist li {
-    padding: 12px 10px;
+    padding: 14px 12px;
     cursor: pointer;
-    border-bottom: 1px solid #eaa0a0;
-    transition: background 0.3s;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.3s, color 0.3s;
 }
 
-#playlist li:hover { background:#e187cb; }
-#playlist li.active { background:#f9abcf; color:#9c2d7b; font-weight:bold; }
+#playlist li:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+#playlist li.active {
+    background: rgba(255,255,255,0.3);
+    color: #fffcf0;
+    font-weight: bold;
+}
 
 .player-container {
     margin-top: 20px;
@@ -171,17 +186,23 @@ audio {
 }
 
 button {
-    background:#9e4e6e;
-    color:#fff;
-    border:none;
-    padding:10px 16px;
-    margin:5px;
-    border-radius:6px;
-    cursor:pointer;
-    transition: background 0.3s;
+    background: linear-gradient(145deg,#a65795,#d98ec6);
+    color: #fff;
+    border: none;
+    padding: 12px 18px;
+    margin: 5px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
 }
 
-button:hover { background:#c16fa1; }
+button:hover {
+    background: linear-gradient(145deg,#d98ec6,#a65795);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+}
 
 @keyframes scroll {
   0% { transform: translateX(100%); }
@@ -299,16 +320,18 @@ document.addEventListener("DOMContentLoaded", () => {
         logo.style.setProperty('--wave-glow', glow);
     }
 
-    function updateTitle(name){
-        titleEl.style.animation = "none";
-        titleEl.textContent = "🎶 Now Playing: " + name;
-        let container = document.getElementById("current-song-container").offsetWidth;
-        let textW = titleEl.scrollWidth;
-        if(textW > container){
-            let duration = textW / 50;
-            titleEl.style.animation = `scroll ${duration}s linear infinite`;
-        }
+function updateTitle(name){
+    titleEl.textContent = "🎵 " + name + " 🎵";
+    let containerW = titleEl.parentElement.offsetWidth;
+    let textW = titleEl.scrollWidth;
+    if(textW > containerW){
+        titleEl.classList.add("scrolling");
+        titleEl.style.animationDuration = (textW/50) + "s";
+    } else {
+        titleEl.classList.remove("scrolling");
+        titleEl.style.animationDuration = null;
     }
+}
 
     function renderPlaylist() {
         playlistEl.innerHTML = "";
