@@ -277,11 +277,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
     const titleEl = document.getElementById("current-song");
     const logo = document.getElementById("soundio-logo");
-    const genreFilter = document.getElementById("genre-filter");
     const playlistEl = document.getElementById("playlist");
+    const genreFilter = document.getElementById("genre-filter");
 
-    let playlist = []; // full playlist from backend
-    let items = [];    // currently visible songs after filtering
+    const playBtn = document.getElementById("play-pause-btn");
+    const stopBtn = document.getElementById("stop-btn");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const shuffleBtn = document.getElementById("shuffle-btn");
+    const repeatBtn = document.getElementById("repeat-btn");
+
+    let allItems = Array.from(playlistEl.querySelectorAll("li")); // all songs
+    let items = [...allItems]; // currently visible songs (after filtering)
     let index = 0;
     let isPlaying = false;
     let repeat = false;
@@ -313,126 +320,108 @@ document.addEventListener("DOMContentLoaded", () => {
         logo.style.setProperty('--wave-glow', glow);
     }
 
-function updateTitle(name){
-    titleEl.textContent = "🎵 " + name + " 🎵";
-    let containerW = titleEl.parentElement.offsetWidth;
-    let textW = titleEl.scrollWidth;
-    if(textW > containerW){
-        titleEl.classList.add("scrolling");
-        titleEl.style.animationDuration = (textW/50) + "s";
-    } else {
-        titleEl.classList.remove("scrolling");
-        titleEl.style.animationDuration = null;
+    function updateTitle(name){
+        titleEl.textContent = "🎵 " + name + " 🎵";
+        let containerW = titleEl.parentElement.offsetWidth;
+        let textW = titleEl.scrollWidth;
+        if(textW > containerW){
+            titleEl.classList.add("scrolling");
+            titleEl.style.animationDuration = (textW/50) + "s";
+        } else {
+            titleEl.classList.remove("scrolling");
+            titleEl.style.animationDuration = null;
+        }
     }
-}
 
-    function renderPlaylist() {
-        playlistEl.innerHTML = "";
-        const selected = genreFilter.value.toLowerCase();
-        items = [];
+    function loadSong(idx){
+        if(items.length === 0) return;
+        if(idx < 0) idx = items.length -1;
+        if(idx >= items.length) idx = 0;
+        index = idx;
 
-        playlist.forEach(song => {
-            if(selected === "all" || song.genre.toLowerCase() === selected){
-                const li = document.createElement("li");
-                li.textContent = song.name.replace(/_/g,' ');
-                li.dataset.url = song.url;
-                li.dataset.genre = song.genre;
-                li.addEventListener("click", ()=>{
-                    loadSongByUrl(song.url, song.name.replace(/_/g,' '));
-                });
-                playlistEl.appendChild(li);
-                items.push(li);
-            }
+        const li = items[index];
+        items.forEach(i=>i.classList.remove("active"));
+        li.classList.add("active");
+
+        player.src = li.dataset.src;
+        player.play();
+        isPlaying = true;
+        playBtn.textContent = "⏸";
+        updateTitle(li.textContent);
+        initAudio();
+    }
+
+    function filterPlaylist(){
+        const genre = genreFilter.value.toLowerCase();
+        items = allItems.filter(li => {
+            const liGenre = li.dataset.genre || "all";
+            li.style.display = (genre === "all" || liGenre.toLowerCase() === genre) ? "list-item" : "none";
+            return li.style.display === "list-item";
         });
-
-        // reset index after filter
         index = 0;
     }
 
-    function loadSongByUrl(url, name){
-        if(!url) return;
-        initAudio();
-
-        // remove active class
-        items.forEach(li => li.classList.remove("active"));
-
-        // mark clicked item as active
-        const li = items.find(li => li.dataset.url === url);
-        if(li) li.classList.add("active");
-
-        player.src = encodeURI(url);
-        player.play();
-        isPlaying = true;
-        updateTitle(name);
-
-        // set index in current filtered items
-        index = items.findIndex(li => li.dataset.url === url);
-    }
+    // Initial click listeners for playlist
+    allItems.forEach((li, idx)=>{
+        li.addEventListener("click", ()=>{
+            loadSong(items.indexOf(li));
+        });
+    });
 
     // Buttons
-    const playBtn = document.getElementById("play-pause-btn");
-    const stopBtn = document.getElementById("stop-btn");
-    const nextBtn = document.getElementById("next-btn");
-    const prevBtn = document.getElementById("prev-btn");
-    const shuffleBtn = document.getElementById("shuffle-btn");
-    const repeatBtn = document.getElementById("repeat-btn");
-
     playBtn.onclick = ()=>{
-        if(!player.src){ 
-            if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); 
-            return; 
-        }
+        if(!player.src){ loadSong(0); return; }
         if(isPlaying){ player.pause(); playBtn.textContent="▶️"; }
         else { player.play(); playBtn.textContent="⏸"; }
         isPlaying = !isPlaying;
     };
 
-    stopBtn.onclick = ()=>{ 
-        player.pause(); 
-        player.currentTime=0; 
-        isPlaying=false; 
-        playBtn.textContent="▶️"; 
+    stopBtn.onclick = ()=>{
+        player.pause();
+        player.currentTime = 0;
+        isPlaying = false;
+        playBtn.textContent="▶️";
     };
 
-    nextBtn.onclick = ()=>{ 
-        index = repeat ? index : (index+1)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    nextBtn.onclick = ()=>{
+        let nextIndex = repeat ? index : index+1;
+        loadSong(nextIndex % items.length);
     };
 
-    prevBtn.onclick = ()=>{ 
-        index = (index-1+items.length)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+    prevBtn.onclick = ()=>{
+        let prevIndex = repeat ? index : index-1;
+        loadSong((prevIndex + items.length) % items.length);
     };
 
     shuffleBtn.onclick = ()=>{
         for(let i=items.length-1;i>0;i--){
             let j = Math.floor(Math.random()*(i+1));
-            [playlist[i],playlist[j]] = [playlist[j],playlist[i]];
+            [items[i], items[j]] = [items[j], items[i]];
         }
-        renderPlaylist();
-        if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent);
+        // re-append to DOM in new order
+        items.forEach(li => playlistEl.appendChild(li));
+        loadSong(0);
     };
 
-    repeatBtn.onclick = ()=>{ 
-        repeat = !repeat; 
-        alert("Repeat "+(repeat?"ON":"OFF")); 
+    repeatBtn.onclick = ()=>{
+        repeat = !repeat;
+        alert("Repeat "+(repeat?"ON":"OFF"));
     };
 
     player.addEventListener("ended", ()=>{
-        index = repeat ? index : (index+1)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent);
+        let nextIndex = repeat ? index : index+1;
+        loadSong(nextIndex % items.length);
     });
 
-    genreFilter.addEventListener("change", ()=>{ renderPlaylist(); });
+    genreFilter.addEventListener("change", ()=>{
+        filterPlaylist();
+        loadSong(0);
+    });
 
-    // Fetch songs from backend
-    fetch("/songs")
-        .then(r=>r.json())
-        .then(data=>{
-            playlist = data;
-            renderPlaylist();
-        });
+    // Initialize playlist display
+    filterPlaylist();
 });
+</script>
 </script>
 <!--
 <div style="margin-top:20px;">
