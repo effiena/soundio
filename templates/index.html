@@ -283,6 +283,24 @@ document.addEventListener("DOMContentLoaded", () => {
         index = i;
         isPlaying = true;
     }
+        function renderPlaylist() {
+        playlistEl.innerHTML = "";
+        const selected = genreFilter.value;
+        items = [];
+
+        playlist.forEach(song => {
+            if(selected === "all" || song.genre === selected){
+                const li = document.createElement("li");
+                li.textContent = song.name.replace(/_/g,' ');
+                li.dataset.url = song.url;
+                li.dataset.genre = song.genre;
+                li.addEventListener("click", ()=> loadSongByUrl(song.url, song.name.replace(/_/g,' ')));
+                playlistEl.appendChild(li);
+                items.push(li);
+            }
+        });
+        index = 0;
+    }
 
     playlistItems.forEach((li,i)=>{
         li.addEventListener("click", ()=> loadSong(i));
@@ -337,8 +355,16 @@ document.addEventListener("DOMContentLoaded", () => {
             index = (index+1)%playlistItems.length;
             loadSong(index);
         }
-    });
+ genreFilter.addEventListener("change", renderPlaylist);
 
+    // Fetch playlist from backend
+    fetch("/songs")
+        .then(r=>r.json())
+        .then(data=>{
+            playlist = data; // expect [{name, url, genre}]
+            renderPlaylist();
+        })
+        .catch(e=>console.error("Failed to load songs", e));
 });
 </script>
 <!--
