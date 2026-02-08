@@ -51,22 +51,42 @@ def license_file():
 
 # -------- AUTO LANGUAGE DETECTION --------
 malay_keywords = [
-    "siti","sharifah","s.jibeng","s. jibeng","muda","janda","a.ramlee","cek","yang","hati","search","exists","ukays","spring","angan", "sepi","flybaits","yale","kazar","impian","sinaran","hajat","haida","ini","malam","kita","minyak","nasi","rasa","rintihan",
-    "lagu","ramlah","melayu","jamal","amy","cinta","sayang", "sendiri","kau","hampa","aishah","janji","aku","ku","ziana","dan","di","dag","intan","kasih","kasihku","kasihmu","ella"
+    "siti","sharifah","s.jibeng","s. jibeng","muda","janda","a.ramlee","cek","yang","hati","search",
+    "exists","ukays","spring","angan","sepi","flybaits","yale","kazar","impian","sinaran","hajat",
+    "haida","ini","malam","kita","minyak","nasi","rasa","rintihan","lagu","ramlah","melayu","jamal",
+    "amy","cinta","sayang","sendiri","kau","hampa","aishah","janji","aku","ku","ziana","dan","di",
+    "dag","intan","kasih","kasihku","kasihmu","ella"
+]
+
+# Korean keywords for English-only K-pop songs
+korean_keywords = [
+    "bts","new jeans","red velvet","super junior","beast","koyote","twice","blackpink","twice","seventeen","exo","got7","redvelvet","straykids","ateez","sudden shower","big bang","UI","ailee","rose"
 ]
 
 def detect_language(filename):
-    # detect Chinese characters
-    for c in filename:
-        if '\u4e00' <= c <= '\u9fff':
-            return "Mandarin"  # matches dropdown
-
     name = filename.lower()
 
+    # 1️⃣ Chinese characters → Mandarin
+    for c in filename:
+        if '\u4e00' <= c <= '\u9fff':
+            return "Mandarin"
+
+    # 2️⃣ Korean characters → Korean
+    for c in filename:
+        if '\uac00' <= c <= '\ud7af':
+            return "Korean"
+
+    # 3️⃣ Korean artist keywords → Korean
+    for k in korean_keywords:
+        if k in name:
+            return "Korean"
+
+    # 4️⃣ Malay keywords → Malay
     for k in malay_keywords:
         if k in name:
             return "Malay"
 
+    # 5️⃣ Fallback → English
     return "English"
 
 @app.route("/songs")
