@@ -152,8 +152,22 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx, analyser, source, dataArray;
 
 function updateTitle(name){
-        titleEl.textContent = "🎶 Now Playing: " + name;
+    titleEl.textContent = "🎶 Now Playing: " + name;
+
+    // reset animation
+    titleEl.classList.remove("scrolling");
+    
+    // check if text width exceeds container
+    const containerWidth = document.getElementById("current-song-container").offsetWidth;
+    const textWidth = titleEl.scrollWidth;
+
+    if(textWidth > containerWidth){
+        // calculate duration based on text width
+        const duration = textWidth / 50; // pixels per second
+        titleEl.style.animationDuration = duration + "s";
+        titleEl.classList.add("scrolling");
     }
+}
 
 
 function initAudio() {
