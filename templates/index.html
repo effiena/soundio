@@ -221,7 +221,7 @@ button:hover { background:#c16fa1; }
 {% for song in playlist %}
     <li 
         data-src="/static/music/{{ song }}" 
-        data-lang="{{ song_languages[song] }}"
+        data-lang="{{ song_languages.get(song, 'Other') }}"
     >
         🎵 {{ song.rsplit('.', 1)[0].replace('_', ' ') }}
     </li>
