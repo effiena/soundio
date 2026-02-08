@@ -71,8 +71,8 @@ def detect_language(filename):
 
 # -------- AUTO LANGUAGE DETECTION --------
 malay_keywords = [
-    "siti","search","exists","ukays","spring",
-    "lagu","melayu","jamal","amy","ella"
+    "siti","search","exists","ukays","spring","angan", "sepi",
+    "lagu","melayu","jamal","amy","cinta","sayang", "sendiri","kau","hampa","aishah","janji","aku","ku","ziana","dan","di","dag","intan","kasih","kasihku","kasihmu","ella"
 ]
 
 def detect_language(filename):
