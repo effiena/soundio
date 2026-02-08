@@ -15,7 +15,7 @@ malay_keywords = [
 ]
 
 korean_keywords = [
-    "bts","blackpink","twice","seventeen","exo","got7","redvelvet","straykids","ateez"
+    "bts","blackpink","twice","seventeen","exo","got7","redvelvet","straykids","sudden shower","lovely runner","baek","ateez"
 ]
 
 # -------- LANGUAGE DETECTION --------
