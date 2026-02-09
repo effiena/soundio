@@ -182,6 +182,22 @@ button:hover { background:#c16fa1; }
 </div>
 
 <script>
+   
+const audio = document.querySelector("audio");
+const marquee = document.querySelector(".marquee span");
+
+audio.addEventListener("play", ()=>{
+    marquee.style.animationPlayState="running";
+});
+
+audio.addEventListener("pause", ()=>{
+    marquee.style.animationPlayState="paused";
+});
+
+audio.addEventListener("ended", ()=>{
+    marquee.style.animationPlayState="paused";
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     const player = document.getElementById("player");
     const titleEl = document.getElementById("current-song");
