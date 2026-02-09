@@ -39,13 +39,30 @@ body::before {
     pointer-events: none;
     z-index: -1;   /* ← ADD THIS */
 }
-#logo-container { margin-top:20px; display:flex; justify-content:center; position:relative; }
-#soundio-logo { width:110px; aspect-ratio:1/1; border-radius:50%; object-fit:cover; border:4px solid rgb(151,43,135); box-shadow:0 0 10px rgba(248,15,248,0.5); transition:0.05s; position:relative; z-index:1; }
-h1 { font-size:36px; font-weight:700; margin:15px 0; background:linear-gradient(90deg,#420375,#023f22); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:0 2px 6px rgba(215, 36, 89, 0.651);}
-#current-song-container { width:90%; max-width:600px; margin:10px auto; overflow:hidden; white-space:nowrap; background:rgba(255, 255, 255, 0); backdrop-filter:blur(12px) saturate(180%); border-radius:24px; border:1px solid rgba(255,255,255,0.3); padding:12px 16px; text-align:left; box-shadow:0 8px 20px rgba(233,120,200,0.25),0 4px 10px rgba(255, 7, 177, 0.121);}
-#current-song { font-weight:bold; font-size:18px; color:#3b032d; display:inline-block; text-shadow:0 2px 4px rgb(65, 13, 44);}
-#playlist { list-style:none; padding:0; margin:10px auto; max-height:240px; overflow-y:auto; width:90%; max-width:600px; border-radius:8px; box-shadow:0 3px 8px rgba(113, 1, 85, 0.991); background:rgba(255,255,255,0.05);}
-#playlist li { padding:12px 10px; cursor:pointer; border-bottom:1px solid #eaa0a0; transition:background 0.3s;}
+#logo-container { 
+    margin-top:20px; 
+    display:flex; justify-content:center; position:relative; }
+#soundio-logo { width:110px; aspect-ratio:1/1; border-radius:50%; object-fit:cover; 
+    border:4px solid rgb(151,43,135); box-shadow:0 0 10px rgba(248,15,248,0.5); 
+    transition:0.05s; position:relative; z-index:1; }
+h1 { font-size:36px; font-weight:700; margin:15px 0; 
+    background:linear-gradient(90deg,#420375,#023f22); 
+    -webkit-background-clip:text; 
+    -webkit-text-fill-color:transparent; 
+    text-shadow:0 2px 6px rgba(215, 36, 89, 0.651);}
+#current-song-container { width:90%; max-width:600px; margin:10px auto;
+     overflow:hidden; white-space:nowrap; background:rgba(255, 255, 255, 0); 
+     backdrop-filter:blur(12px) saturate(180%); border-radius:24px; 
+     border:1px solid rgba(255,255,255,0.3); padding:12px 16px; 
+     text-align:left; 
+     box-shadow:0 8px 20px rgba(233,120,200,0.25),0 4px 10px rgba(255, 7, 177, 0.121);}
+#current-song { font-weight:bold; font-size:18px; color:#3b032d; 
+    display:inline-block; text-shadow:0 2px 4px rgb(65, 13, 44);}
+#playlist { list-style:none; padding:0; margin:10px auto; max-height:240px; 
+    overflow-y:auto; width:90%; max-width:600px; border-radius:8px; 
+    box-shadow:0 3px 8px rgba(113, 1, 85, 0.991); background:rgba(255,255,255,0.05);}
+#playlist li { padding:12px 10px; cursor:pointer; 
+    border-bottom:1px solid #eaa0a0; transition:background 0.3s;}
 #playlist li:hover { background:#e187ca68; } 
 #playlist li.active { background:#0b0a0a62; color:#f349c050; font-weight:bold; }
 .player-container { margin-top:20px; display:flex; flex-direction:column; align-items:center; }
@@ -80,9 +97,9 @@ button:hover { background:#c16fa1; }
     <ul id="playlist">
 {% for song in playlist %}
     {# Data-src uses raw filename; JS will encode URI #}
-<li data-src="/static/music/{{ song }}">
-     {{ song.rsplit('.', 1)[0].replace('_', ' ') }}
-</li>
+        <li data-src="/static/music/{{ song }}">
+       {{ song.rsplit('.', 1)[0].replace('_', ' ') }}
+    </li>
 {% endfor %}
 </ul>
 
@@ -110,82 +127,67 @@ document.addEventListener("DOMContentLoaded", () => {
     let items = [];    // visible songs after filter
     let index = 0;
     let isPlaying = false;
-    let repeat = false;
+    let repeat = false
     let audioCtx, analyser, source, dataArray;
 
-    // Initialize AudioContext & visualizer
-    function initAudio() {
-        if(audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        source = audioCtx.createMediaElementSource(player);
-        analyser = audioCtx.createAnalyser();
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
-        analyser.fftSize = 256;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        animateVisuals();
-    }
-
-    // Resume audio context on mobile
-    function resumeAudioContext() {
-        if(audioCtx && audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-    }
-
-    // Animate logo & text based on audio
-    function animateVisuals() {
-        if(!analyser) return;
-        requestAnimationFrame(animateVisuals);
-
-        analyser.getByteFrequencyData(dataArray);
-        let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
-
-        // Logo pulsing
-        const logoScale = 0.9 + (avg / 255) * 0.3;
-        const logoGlow = (avg / 255) * 15;
-        logo.style.transform = `scale(${logoScale})`;
-        logo.style.boxShadow = `0 0 ${logoGlow}px rgba(230,194,41,0.8)`;
-        logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
-        logo.style.setProperty('--wave-glow', logoGlow);
-
-        // Now Playing text pulsing
-        const textScale = 1 + (avg / 255) * 0.08; // smaller pulse for text
-        const textGlow = (avg / 255) * 8;
-        titleEl.style.transform = `scale(${textScale})`;
-        titleEl.style.textShadow = `0 0 ${textGlow}px rgba(255,255,255,0.8),
-                                    0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
-    }
-
-    // Load a song by URL
-    function loadSongByUrl(url, name){
-        if(!url) return;
-        resumeAudioContext();  // <-- fix for background play
-        initAudio();           // initialize audio & visuals
-
-        // Highlight current song
-        items.forEach(li=>li.classList.remove("active"));
-        const li = items.find(li=>li.dataset.url===url);
-        if(li) li.classList.add("active");
-
-        player.src = encodeURI(url);
-        player.play();
-        isPlaying = true;
+function updateTitle(name){
         titleEl.textContent = "🎶 Now Playing: " + name;
-        index = items.findIndex(li=>li.dataset.url===url);
     }
-if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-        title: playlistItems[index].textContent.trim(),
-        artist: 'Soundio',
-        album: '',
-        artwork: [
-            { src: '/static/soundiologo.png', sizes: '96x96', type: 'image/png' }
-        ]
-    });
 
 
-    // Render playlist based on genre filter
+function initAudio() {
+    if(audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    source = audioCtx.createMediaElementSource(player);
+    analyser = audioCtx.createAnalyser();
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    analyser.fftSize = 256;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    animateVisuals();
+}
+
+function animateVisuals() {
+    if(!analyser) return;
+    requestAnimationFrame(animateVisuals);
+
+    analyser.getByteFrequencyData(dataArray);
+    let avg = dataArray.reduce((a,b)=>a+b)/dataArray.length;
+
+    // Logo pulsing
+    const logoScale = 0.9 + (avg / 255) * 0.3;
+    const logoGlow = (avg / 255) * 15;
+    logo.style.transform = `scale(${logoScale})`;
+    logo.style.boxShadow = `0 0 ${logoGlow}px rgba(230,194,41,0.8)`;
+    logo.style.setProperty('--wave-scale', 1 + (avg / 255) * 0.3);
+    logo.style.setProperty('--wave-glow', logoGlow);
+
+    // Now Playing text pulsing
+    const textScale = 1 + (avg / 255) * 0.08; // smaller pulse for text
+    const textGlow = (avg / 255) * 8;
+    titleEl.style.transform = `scale(${textScale})`;
+    titleEl.style.textShadow = `0 0 ${textGlow}px rgba(255,255,255,0.8),
+                                0 0 ${textGlow/2}px rgba(255,255,0,0.6)`;
+}
+
+// Make sure you call initAudio() inside your loadSong function
+function loadSongByUrl(url, name){
+    if(!url) return;
+    initAudio(); // initialize audio and animations
+
+    // Highlight current song
+    items.forEach(li=>li.classList.remove("active"));
+    const li = items.find(li=>li.dataset.url===url);
+    if(li) li.classList.add("active");
+
+    player.src = encodeURI(url);
+    player.play();
+    isPlaying = true;
+    titleEl.textContent = "🎶 Now Playing: " + name;
+    index = items.findIndex(li=>li.dataset.url===url);
+}
+
+
     function renderPlaylist() {
         playlistEl.innerHTML = "";
         const selected = genreFilter.value;
@@ -194,7 +196,7 @@ if ('mediaSession' in navigator) {
         playlist.forEach(song => {
             if(selected === "all" || song.genre === selected){
                 const li = document.createElement("li");
-                li.textContent = "🎵 " + song.name.replace(/_/g,' ');
+                li.textContent = "🎵" + song.name.replace(/_/g,' ');
                 li.dataset.url = song.url;
                 li.dataset.genre = song.genre;
                 li.addEventListener("click", ()=> loadSongByUrl(song.url, song.name.replace(/_/g,' ')));
@@ -205,57 +207,25 @@ if ('mediaSession' in navigator) {
         index = 0;
     }
 
-    // Button controls
+
+
+    // Buttons
     document.getElementById("play-pause-btn").onclick = ()=> {
-        if(!player.src){ 
-            if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); 
-            return; 
-        }
-
-        resumeAudioContext(); // <-- important for mobile
-
-        if(isPlaying){ 
-            player.pause(); 
-            this.textContent="▶️"; 
-        } else { 
-            player.play(); 
-            this.textContent="⏸"; 
-        }
+        if(!player.src){ if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent); return; }
+        if(isPlaying){ player.pause(); this.textContent="▶️"; } 
+        else{ player.play(); this.textContent="⏸"; }
         isPlaying = !isPlaying;
     };
-
-    document.getElementById("stop-btn").onclick = ()=> {
-        player.pause(); 
-        player.currentTime=0; 
-        isPlaying=false; 
-        document.getElementById("play-pause-btn").textContent="▶️";
-    };
-
-    document.getElementById("next-btn").onclick = ()=> { 
-        index = repeat?index:(index+1)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent); 
-    };
-
-    document.getElementById("prev-btn").onclick = ()=> { 
-        index = (index-1+items.length)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent); 
-    };
-
+    document.getElementById("stop-btn").onclick = ()=> { player.pause(); player.currentTime=0; isPlaying=false; };
+    document.getElementById("next-btn").onclick = ()=> { index = repeat?index:(index+1)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
+    document.getElementById("prev-btn").onclick = ()=> { index = (index-1+items.length)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); };
     document.getElementById("shuffle-btn").onclick = ()=>{
         items.sort(()=>Math.random()-0.5);
         renderPlaylist();
         if(items[0]) loadSongByUrl(items[0].dataset.url, items[0].textContent);
     };
-
-    document.getElementById("repeat-btn").onclick = ()=>{
-        repeat=!repeat; 
-        alert("Repeat "+(repeat?"ON":"OFF")); 
-    };
-
-    player.addEventListener("ended", ()=> { 
-        index = repeat?index:(index+1)%items.length; 
-        loadSongByUrl(items[index].dataset.url, items[index].textContent); 
-    });
+    document.getElementById("repeat-btn").onclick = ()=>{ repeat=!repeat; alert("Repeat "+(repeat?"ON":"OFF")); };
+    player.addEventListener("ended", ()=> { index = repeat?index:(index+1)%items.length; loadSongByUrl(items[index].dataset.url, items[index].textContent); });
 
     genreFilter.addEventListener("change", renderPlaylist);
 
@@ -267,7 +237,6 @@ if ('mediaSession' in navigator) {
             renderPlaylist();
         })
         .catch(e=>console.error("Failed to load songs", e));
-
 });
 </script>
 
