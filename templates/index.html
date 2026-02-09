@@ -52,50 +52,26 @@ h1 { font-size:36px; font-weight:700; margin:15px 0;
     text-shadow:0 2px 6px rgba(215, 36, 90, 0.263);}
 /* ===== iPHONE GLASS NOW PLAYING ===== */
 #current-song-container {
-    position: relative;
     width: 90%;
     max-width: 600px;
     margin: 14px auto;
-    padding: 14px 20px;
-    border-radius: 16px;
-
-    /* Transparent water-glass look */
-    background: rgba(255, 255, 255, 0.05); /* very transparent */
-    backdrop-filter: blur(25px) saturate(180%);
-    -webkit-backdrop-filter: blur(25px) saturate(180%);
-
-    /* Soft border glow */
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1), 
-                0 0 30px rgba(255, 150, 220, 0.2); /* subtle neon glow */
-
+    padding: 12px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05); /* same as playlist */
+    box-shadow: 0 3px 8px rgba(113, 1, 85, 0.991); /* same as playlist */
+    border: none;
     text-align: left;
-    transition: all 0.4s ease;
+    transition: all 0.3s ease;
 }
 
-/* Optional: floating shimmer reflection */
 #current-song-container::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 16px;
-    background: linear-gradient(
-        120deg,
-        rgba(255, 255, 255, 0.1),
-        rgba(255, 150, 220, 0.05) 50%,
-        transparent 80%
-    );
-    opacity: 0.3;
-    pointer-events: none;
+    display: none; /* remove the glass reflection */
 }
 
-/* Song text */
 #current-song {
+    color: #fff; /* matches playlist text style */
     font-weight: bold;
     font-size: 18px;
-    color: #fff;
-    text-shadow: 0 0 6px rgba(255,255,255,0.5),
-                 0 0 10px rgba(255,150,220,0.3);
 }
 /* ===== scrolling text ===== */
 .marquee{
